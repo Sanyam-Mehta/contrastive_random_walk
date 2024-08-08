@@ -26,6 +26,11 @@ class ResNetPatchEncoder(nn.Module):
         # x shape: (B, N, H, W, C)
         
         B, N, H, W, C = x.shape
+        # B: batch size
+        # N: number of patches
+        # H: height of each patch
+        # W: width of each patch
+        # C: number of channels in the input tensor
 
         assert C == 3, "Input tensor must have 3 channels"
 
@@ -52,6 +57,39 @@ class ResNetPatchEncoder(nn.Module):
         
         return x
 
+
+
+class VideoEncoder(nn.Module):
+    def __init__(self, resnet_type='resnet18', output_dim=128):
+        super(VideoEncoder, self).__init__()
+        self.resnet_patch_encoder = ResNetPatchEncoder(resnet_type=resnet_type, output_dim=output_dim)
+    
+    def forward(self, video):
+        # video shape: (B, T, N, H, W, C)
+        # B: batch size
+        # T: number of frames
+        # N: number of patches
+        # H: height of each patch
+        # W: width of each patch
+        # C: number of channels in the input tensor
+
+        B, T, N, H, W, C = video.shape
+
+        # Use ResnetPatchEncoder to encode each frame. 
+
+        # Reshape the video tensor to combine batch and time dimensions (use einops)
+        video = einops.rearrange(video, 'b t n h w c -> (b t) n h w c')
+
+        # Pass the reshaped video tensor through the ResNet patch encoder
+        video = self.resnet_patch_encoder(video)
+
+        # Reshape the output tensor to include the batch and time dimensions (use einops)
+        video = einops.rearrange(video, '(b t) n d -> b t n d', b=B, t=T)
+
+        return video
+
+
+
 # Example usage:
 encoder = ResNetPatchEncoder(resnet_type='resnet18', output_dim=128)
 input_tensor = torch.randn(16, 10, 224, 224, 3) # (B, N, H, W, C)
@@ -60,4 +98,16 @@ output = encoder(input_tensor) # output shape: (B, N, D)
 print(output.shape)
 
 # assert the unit norm
+assert torch.isclose(output.norm(dim=-1), torch.ones_like(output.norm(dim=-1))).all()
+
+
+# Example usage:
+video_encoder = VideoEncoder(resnet_type='resnet18', output_dim=128)
+input_tensor = torch.randn(16, 5, 10, 224, 224, 3) # (B, T, N, H, W, C)
+output = video_encoder(input_tensor) # output shape: (B, T, N, D)
+
+print(output.shape)
+
+# assert the unit norm
+
 assert torch.isclose(output.norm(dim=-1), torch.ones_like(output.norm(dim=-1))).all()
