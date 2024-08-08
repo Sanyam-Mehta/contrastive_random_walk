@@ -43,6 +43,9 @@ class ResNetPatchEncoder(nn.Module):
         
         # Pass through the linear projection layer
         x = self.fc(x) # shape: (B*N, D)
+
+        # Apply L2 normalization so that the output features have unit norm (the D dimension) has unit norm
+        x = nn.functional.normalize(x, p=2, dim=-1)
         
         # Reshape back to include the batch and node dimensions (use einops)
         x = einops.rearrange(x, '(b n) d -> b n d', b=B, n=N)
@@ -50,8 +53,11 @@ class ResNetPatchEncoder(nn.Module):
         return x
 
 # Example usage:
-# encoder = ResNetPatchEncoder(resnet_type='resnet18', output_dim=128)
-# input_tensor = torch.randn(16, 10, 224, 224, 3) # (B, N, H, W, C)
-# output = encoder(input_tensor) # output shape: (B, N, D)
+encoder = ResNetPatchEncoder(resnet_type='resnet18', output_dim=128)
+input_tensor = torch.randn(16, 10, 224, 224, 3) # (B, N, H, W, C)
+output = encoder(input_tensor) # output shape: (B, N, D)
 
-# print(output.shape)
+print(output.shape)
+
+# assert the unit norm
+assert torch.isclose(output.norm(dim=-1), torch.ones_like(output.norm(dim=-1))).all()
