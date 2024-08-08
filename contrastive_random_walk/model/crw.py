@@ -6,6 +6,44 @@ from contrastive_random_walk.model.similarity import get_global_affinity_matrix
 import lightning as L
 
 
+class ContrastiveRandomWalkLoss(nn.Module):
+    def __init__(self):
+        super(ContrastiveRandomWalkLoss, self).__init__()
+
+    def forward(self, global_affinity_matrix):
+        # # Take the sum of the negative log of the diagonal elements of the global affinity matrix
+        # # This is the loss function for the contrastive random walk model
+
+        # # global_affinity_matrix shape: (B, N, N)
+
+        # loss = 0
+        
+        # B, _, _ = global_affinity_matrix.shape
+
+        # for i in range(B):
+        #     single_global_affinity_matrix = global_affinity_matrix[i]
+
+        #     # Take the log of the diagonal elements
+        #     log_diag = torch.log(torch.diag(single_global_affinity_matrix))
+
+        #     loss += -torch.sum(log_diag)
+
+        # return loss
+
+        #### Optimized version ####
+        # Extract the diagonal elements for all batches
+        diag_elements = torch.diagonal(global_affinity_matrix, dim1=-2, dim2=-1)
+        
+        # Take the log of the diagonal elements
+        log_diag = torch.log(diag_elements)
+        
+        # Sum the negative log values
+        loss = -torch.sum(log_diag)
+
+        return loss
+            
+
+
 class ContrastiveRandomWalk(nn.Module):
     def __init__(
         self,
@@ -60,6 +98,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             temperature=temperature,
             edge_dropout_rate=edge_dropout_rate,
         )
+        self.contrastive_random_walk_loss = ContrastiveRandomWalkLoss()
         self.learning_rate = learning_rate
 
     def training_step(self, batch, batch_idx):
@@ -78,7 +117,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         global_affinity_matrix = self.model(video)
 
         # Compute loss here
-        loss = self.compute_contrastive_random_walk_loss(global_affinity_matrix)
+        loss = self.contrastive_random_walk_loss(global_affinity_matrix)
 
         self.log("val_loss", loss)
 
@@ -87,25 +126,3 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
-    
-
-    def compute_contrastive_random_walk_loss(self, global_affinity_matrix):
-        # Compute the CE loss between:
-        # 1. The global affinity matrix (predicted) [B x N x N]
-        # 2. The identity matrix (ground truth) [B x N x N]
-        B, N, _ = global_affinity_matrix.size()
-        
-        # Ground truth identity matrix
-        ground_truth = torch.eye(N).unsqueeze(0).repeat(B, 1, 1)
-
-        # Flatten the matrices to shape [B*N, N] for CrossEntropyLoss
-        predicted_flat = global_affinity_matrix.view(B * N, N)
-        ground_truth_flat = ground_truth.view(B * N, N).argmax(dim=1)
-
-        # Compute the CrossEntropyLoss
-        criterion = nn.CrossEntropyLoss()
-        loss = criterion(predicted_flat, ground_truth_flat)
-        return loss
-
-
-        
