@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def patchify_image(image, patch_size):
     """
     Extracts patches from an image based on the given patch size.
@@ -14,10 +15,10 @@ def patchify_image(image, patch_size):
     # Initialize an empty list to store the patches
     # Assert that the patch sizes are valid
     # Iterate over the image in patch-sized steps
-            # Extract the patch from the image
-            # Append the patch to the list of patches
+    # Extract the patch from the image
+    # Append the patch to the list of patches
     # Convert the list of patches to a numpy array
-    
+
     # Check that image is not empty
     assert image.size > 0, "Empty image"
 
@@ -31,11 +32,10 @@ def patchify_image(image, patch_size):
     patches = []
     for i in range(0, height, patch_height):
         for j in range(0, width, patch_width):
-            patch = image[i:i+patch_height, j:j+patch_width]
+            patch = image[i : i + patch_height, j : j + patch_width]
             patches.append(patch)
 
     return np.array(patches)
-
 
 
 def make_palindrome(lst):
@@ -50,11 +50,9 @@ def make_palindrome(lst):
     # Reverse the copy of the list
     # Append the reversed list to the original list
     # Return the palindrome list
-    
+
     palindrome = lst.copy()
     lst.reverse()
     palindrome.extend(lst)
-    
+
     return palindrome
-
-

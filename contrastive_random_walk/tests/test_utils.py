@@ -1,5 +1,6 @@
-from contrastive_random_walk.utils import make_palindrome, patchify_image
 import numpy as np
+from contrastive_random_walk.utils import make_palindrome, patchify_image
+
 
 def test_make_palindrome():
     # Test case 1: Empty list
@@ -29,7 +30,9 @@ def test_make_palindrome():
 
     print("All test cases passed (Palindrome)!")
 
+
 test_make_palindrome()
+
 
 def test_patchify_image():
     # Test case 1: Empty image
@@ -57,7 +60,9 @@ def test_patchify_image():
     # Test case 3: Image with dimensions divisible by patch size
     image = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     patch_size = (2, 2)
-    expected_output = np.array([[[1, 2], [5, 6]], [[3, 4], [7, 8]], [[9, 10], [13, 14]], [[11, 12], [15, 16]]])
+    expected_output = np.array(
+        [[[1, 2], [5, 6]], [[3, 4], [7, 8]], [[9, 10], [13, 14]], [[11, 12], [15, 16]]]
+    )
     assert np.array_equal(patchify_image(image, patch_size), expected_output)
 
     # Test case 4: Image with dimensions not divisible by patch size
@@ -78,5 +83,6 @@ def test_patchify_image():
     assert patchify_image(image, patch_size).shape == (4, 3, 9)
 
     print("All test cases passed (Patchify)!")
+
 
 test_patchify_image()
