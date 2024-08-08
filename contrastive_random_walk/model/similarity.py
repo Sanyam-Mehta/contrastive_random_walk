@@ -25,6 +25,22 @@ def softmax_similarity_function_local(input, temperature=1.0):
     return probability_matrix
 
 
+def edge_dropout(probability_matrix, edge_dropout_rate=0.5, epsilon=1e-10):
+    """
+    Apply edge dropout to the probability matrix. Some edges are randomly set to a very small value epsilon.
+
+    Args:
+        probability_matrix (torch.Tensor): Probability matrix of dimensions B x T x N x N.
+        edge_dropout_rate (float): Edge dropout rate.
+
+    Returns:
+        torch.Tensor: Output tensor of dimensions B x T x N x N.
+    """
+    mask = (torch.rand_like(probability_matrix) > edge_dropout_rate).float()
+
+    # mask is 1 when the edge is not dropped, 0 otherwise
+    return probability_matrix * mask + epsilon * (1 - mask)
+
 def get_local_affinity_matrices(input, temperature=1.0):
     """
     Compute local affinity matrices for each pair of consecutive frames in the input tensor.
@@ -39,12 +55,22 @@ def get_local_affinity_matrices(input, temperature=1.0):
     return softmax_similarity_function_local(input, temperature)
 
 
-def get_global_affinity_matrix(input, temperature=1.0):
+def get_global_affinity_matrix(input, temperature=1.0, edge_dropout_rate=0.5):
     """
         Multiplies the local affinity matrices to get the global affinity matrix.
     """
     local_affinity_matrices = get_local_affinity_matrices(input, temperature)
+
+    edge_dropped_local_affinity_matrices = edge_dropout(local_affinity_matrices, edge_dropout_rate)
+
+    # Renormalize the edge-dropped local affinity matrices
+    edge_dropped_local_affinity_matrices = edge_dropped_local_affinity_matrices / edge_dropped_local_affinity_matrices.sum(dim=-1, keepdim=True)
+
+    # Assert that the sum of each row is equal to 1
+    assert torch.isclose(edge_dropped_local_affinity_matrices.sum(dim=-1), torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1))).all()
+
     global_affinity_matrix = torch.prod(local_affinity_matrices, dim=1)
+
     return global_affinity_matrix
     
 
