@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 from contrastive_random_walk.model.encoders import VideoEncoder

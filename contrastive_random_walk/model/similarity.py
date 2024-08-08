@@ -1,7 +1,6 @@
 import torch
 
 import torch.nn.functional as F
-from torch import nn
 
 
 def softmax_similarity_function_local(input, temperature=1.0):
