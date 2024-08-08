@@ -106,7 +106,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         global_affinity_matrix = self.model(video)
 
         # Compute loss here
-        loss = self.compute_contrastive_random_walk_loss(global_affinity_matrix)
+        loss = self.contrastive_random_walk_loss(global_affinity_matrix)
 
         self.log("train_loss", loss)
 
