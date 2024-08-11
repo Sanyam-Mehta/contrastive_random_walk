@@ -15,6 +15,7 @@ class KineticsCustom(Kinetics):
         self,
         root,
         frames_per_clip,
+        split="train",
         step_between_clips=1,
         frame_rate=None,
         extensions=("mp4",),
@@ -26,6 +27,7 @@ class KineticsCustom(Kinetics):
         super(KineticsCustom, self).__init__(
             root,
             frames_per_clip = frames_per_clip,
+            split = split,
             step_between_clips = step_between_clips,
             frame_rate = frame_rate,
             extensions = extensions,

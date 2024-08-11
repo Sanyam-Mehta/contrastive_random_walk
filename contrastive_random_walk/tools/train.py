@@ -35,12 +35,37 @@ tranformations_frame = T.Compose(
 # TODO: Check if transforms are passed correctly
 train_dataset = KineticsCustom(
     root="data/kinetics400",
+    split="train",
     frames_per_clip=5,
     step_between_clips=1,
     frame_rate=None,
     extensions=("mp4",),
     num_classes=400,
     transform_video=transforms_video,
+    tranformations_frame=tranformations_frame,
+)
+
+val_dataset = KineticsCustom(
+    root="data/kinetics400",
+    split="val",
+    frames_per_clip=5,
+    step_between_clips=1,
+    frame_rate=None,
+    extensions=("mp4",),
+    num_classes=400,
+    transform_video=transforms_video,
+    tranformations_frame=tranformations_frame,
+)   
+
+test_dataset = KineticsCustom(
+    root="data/kinetics400",
+    split="test",
+    frames_per_clip=5,
+    step_between_clips=1,
+    frame_rate=None,
+    extensions=("mp4",),
+    num_classes=400,
+    transform_video=None,
     tranformations_frame=tranformations_frame,
 )
 
