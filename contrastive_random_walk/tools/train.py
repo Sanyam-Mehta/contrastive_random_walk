@@ -4,14 +4,6 @@ from contrastive_random_walk.data.kinetics_dataset import KineticsCustom
 import lightning as L
 from torchvision import transforms as T
 
-# train dataloader
-train_dataloader = torch.randn(2, 16, 5, 10, 224, 224, 3)  # (Total Batches, B, T, N, H, W, C)
-
-# validation dataloader
-val_dataloader = torch.randn(2, 16, 5, 10, 224, 224, 3)  # (Total Batches, B, T, N, H, W, C)
-
-# test dataloader
-test_dataloader = torch.randn(2, 16, 5, 10, 224, 224, 3)  # (Total Batches, B, T, N, H, W, C)
 
 # Initialize the model
 model = ContrastiveRandomWalkLightningWrapper(
@@ -70,6 +62,8 @@ test_dataset = KineticsCustom(
 )
 
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
+val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=16, shuffle=False)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 # Each element in the dataset is a tensor of size (2*T, NxN, H, W, C), where:
 # T: clip length

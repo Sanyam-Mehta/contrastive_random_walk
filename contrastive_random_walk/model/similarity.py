@@ -78,6 +78,34 @@ def get_global_affinity_matrix(input, temperature=1.0, edge_dropout_rate=0.5):
         torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
     ).all()
 
-    global_affinity_matrix = torch.prod(local_affinity_matrices, dim=1)
+    global_affinity_matrix = torch.prod(edge_dropped_local_affinity_matrices, dim=1)
 
     return global_affinity_matrix
+
+
+def get_affinity_matrices(input, temperature=1.0, edge_dropout_rate=0.5):
+    """
+    Multiplies the local affinity matrices to get the global affinity matrix.
+    """
+    local_affinity_matrices = get_local_affinity_matrices(input, temperature)
+
+    edge_dropped_local_affinity_matrices = edge_dropout(
+        local_affinity_matrices, edge_dropout_rate
+    )
+
+    # Renormalize the edge-dropped local affinity matrices
+    edge_dropped_local_affinity_matrices = (
+        edge_dropped_local_affinity_matrices
+        / edge_dropped_local_affinity_matrices.sum(dim=-1, keepdim=True)
+    )
+
+    # Assert that the sum of each row is equal to 1
+    assert torch.isclose(
+        edge_dropped_local_affinity_matrices.sum(dim=-1),
+        torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
+    ).all()
+
+    global_affinity_matrix = torch.prod(edge_dropped_local_affinity_matrices, dim=1)
+
+    return global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices
+

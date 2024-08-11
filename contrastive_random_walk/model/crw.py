@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
 from contrastive_random_walk.model.encoders import VideoEncoder
-from contrastive_random_walk.model.similarity import get_global_affinity_matrix
+from contrastive_random_walk.model.similarity import get_affinity_matrices
 
 import lightning as L
 
@@ -48,16 +48,12 @@ class ContrastiveRandomWalk(nn.Module):
     def __init__(
         self,
         resnet_type="resnet18",
-        output_dim=128,
-        temperature=1.0,
-        edge_dropout_rate=0.5,
+        output_dim=128
     ):
         super(ContrastiveRandomWalk, self).__init__()
         self.video_encoder = VideoEncoder(
             resnet_type=resnet_type, output_dim=output_dim
         )
-        self.temperature = temperature
-        self.edge_dropout_rate = edge_dropout_rate
 
     def forward(self, video):
         # video shape: (B, T, N, H, W, C)
@@ -73,13 +69,8 @@ class ContrastiveRandomWalk(nn.Module):
         # Encode the video using the video encoder
         video = self.video_encoder(video)
 
-        # Compute the global affinity matrix (B x N x N) [i.e. (B, 49, 49)]
-        global_affinity_matrix = get_global_affinity_matrix(
-            video, self.temperature, self.edge_dropout_rate
-        )
-
-        return global_affinity_matrix
-
+        # video shape: (B, T, N, D)
+        return video
 
 
 class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
@@ -103,7 +94,15 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         video = batch
-        global_affinity_matrix = self.model(video)
+
+        encoded_video = self.model(video)
+
+        # enoded_video shape: (B, T, N, D)
+
+        # Compute the global affinity matrix (B x N x N) [i.e. (B, 49, 49)]
+        global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices(
+            encoded_video, self.temperature, self.edge_dropout_rate
+        )
 
         # Compute loss here
         loss = self.contrastive_random_walk_loss(global_affinity_matrix)
