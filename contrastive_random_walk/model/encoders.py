@@ -18,7 +18,7 @@ class ResNetPatchEncoder(nn.Module):
 
         # Get the output dimensions after passing through ResNet
         # TODO: This is a hacky way to get the output dimensions. Is there a better way?
-        dummy_input = torch.zeros(1, 3, 224, 224)
+        dummy_input = torch.zeros(1, 3, 64, 64)
         dummy_output = self.resnet_encoder(dummy_input)
         self.feature_size = (
             dummy_output.shape[1] * dummy_output.shape[2] * dummy_output.shape[3]

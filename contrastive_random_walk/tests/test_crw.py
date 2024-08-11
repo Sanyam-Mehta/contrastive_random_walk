@@ -7,8 +7,10 @@ def test_contrastive_random_walk():
     model = ContrastiveRandomWalk(
         resnet_type="resnet18", output_dim=128, temperature=1.0, edge_dropout_rate=0.5
     )
-    input_tensor = torch.randn(16, 5, 10, 224, 224, 3)  # (B, T, N, H, W, C)
+    input_tensor = torch.randn(16, 5, 10, 64, 64, 3)  # (B, T, N, H, W, C)
     output = model(input_tensor)  # output shape: (B, N, N)
+
+    print(output.shape)
     assert output.shape == (16, 10, 10)
 
     print("All test cases passed (ContrastiveRandomWalk)!")
