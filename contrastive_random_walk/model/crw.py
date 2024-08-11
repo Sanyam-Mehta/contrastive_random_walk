@@ -62,18 +62,18 @@ class ContrastiveRandomWalk(nn.Module):
     def forward(self, video):
         # video shape: (B, T, N, H, W, C)
         # B: batch size
-        # T: number of frames
-        # N: number of patches
-        # H: height of each patch
-        # W: width of each patch
-        # C: number of channels in the input tensor
+        # T: number of frames (2*clip_len. This is a palindrome of the original video)
+        # N: number of patches (it is actually NxN. So if image is divided in a 7*7 grid, N here will be 49)
+        # H: height of each patch (64)
+        # W: width of each patch (64)
+        # C: number of channels in the input tensor (3)
 
         B, T, N, H, W, C = video.shape
 
         # Encode the video using the video encoder
         video = self.video_encoder(video)
 
-        # Compute the global affinity matrix (B x N x N)
+        # Compute the global affinity matrix (B x N x N) [i.e. (B, 49, 49)]
         global_affinity_matrix = get_global_affinity_matrix(
             video, self.temperature, self.edge_dropout_rate
         )

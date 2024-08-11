@@ -1,5 +1,5 @@
 import numpy as np
-
+import albumentations as A
 
 def patchify_image(image, patch_size):
     """
@@ -58,7 +58,7 @@ def make_palindrome(lst):
     return palindrome
 
 
-def extract_patches_with_jitter(image):
+def extract_patches_with_jitter(image, transforms=None):
     """
     Extracts 64x64 patches from a 256x256 image on a 7x7 grid with overlapping patches,
     and combines them into a single 448x448 image.
@@ -68,13 +68,15 @@ def extract_patches_with_jitter(image):
         jitter (int): The maximum amount of jitter to apply to the patch coordinates.
 
     Returns:
-        np.ndarray: A 448x448 image with patches combined.
+        np.ndarray: A 448x448 image containing the extracted patches.
+        np.ndarray: An array of extracted patches.
 
-    TODO: IMPLEMENT JITTERING
-    DOES NOT PERFORM SPATIAL JITTERING
+    P.S.: Spatial jittering in the original paper is a RandomResizedCrop operation
     """
     patch_size = 64
     stride = 32
+
+    patches = []
 
     new_image_size = 448
     new_image = np.zeros((new_image_size, new_image_size, image.shape[2]), dtype=image.dtype) if len(image.shape) == 3 else np.zeros((new_image_size, new_image_size), dtype=image.dtype)
@@ -84,11 +86,20 @@ def extract_patches_with_jitter(image):
             x_start = i * stride
             y_start = j * stride
             patch = image[x_start:x_start + patch_size, y_start:y_start + patch_size]
-            
+
+            # Implement jittering here (RandomResizedCrop, use A.RandomResizedCrop)
+            augmented = transforms(image=patch)
+            jittered_patch = augmented['image']
+
             new_x_start = i * patch_size
             new_y_start = j * patch_size
-            new_image[new_x_start:new_x_start + patch_size, new_y_start:new_y_start + patch_size] = patch
+            new_image[new_x_start:new_x_start + patch_size, new_y_start:new_y_start + patch_size] = jittered_patch
 
-    return new_image
+
+            patches.append(jittered_patch)
+
+    # patches is a list of 49 patches, each of size 64x64
+
+    return new_image, np.array(patches)
 
 
