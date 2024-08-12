@@ -27,6 +27,8 @@ class ResNetPatchEncoder(nn.Module):
         # Linear layer to project the flattened ResNet features to the desired output dimensions (D)
         self.fc = nn.Linear(self.feature_size, output_dim)
 
+        self.leaky_relu = nn.LeakyReLU()
+
     def forward(self, x):
         # x shape: (B, N, H, W, C)
 
@@ -52,7 +54,7 @@ class ResNetPatchEncoder(nn.Module):
         x = einops.rearrange(x, "b c h w -> b (c h w)")
 
         # Pass through the linear projection layer
-        x = self.fc(x)  # shape: (B*N, D)
+        x = self.leaky_relu(self.fc(x))  # shape: (B*N, D)
 
         # Apply L2 normalization so that the output features have unit norm (the D dimension) has unit norm
         x = nn.functional.normalize(x, p=2, dim=-1)

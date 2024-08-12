@@ -71,6 +71,22 @@ class ContrastiveRandomWalk(nn.Module):
 
         # video shape: (B, T, N, D)
         return video
+    
+
+# TODO: Implement the LearnableSimilarity module (Not implemented in the original code)
+class LearnableSimilarity(nn.Module):
+    def __init__(self, input_dim=128, output_dim=128):
+        super(LearnableSimilarity, self).__init__()
+        self.self_similarity = nn.Linear(input_dim, output_dim)
+
+    def forward(self, video):
+        # video shape: (B, T, N, D)
+        # This function computes the global affinity matrix using a learnable similarity function
+        # Similarity functions computes the similarity between two adhacent nodes in the graph, i.e.:
+        # For each batch item, the similarity function computes the similarity between the N X D embeddings at time t and time t+1
+        # The output is a matrix of shape (B, T-1, N, N)
+        return video
+
 
 
 class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
@@ -89,6 +105,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             temperature=temperature,
             edge_dropout_rate=edge_dropout_rate,
         )
+        # self.learnable_self_similarity = LearnableSimilarity()
         self.contrastive_random_walk_loss = ContrastiveRandomWalkLoss()
         self.learning_rate = learning_rate
 
@@ -100,9 +117,15 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # enoded_video shape: (B, T, N, D)
 
         # Compute the global affinity matrix (B x N x N) [i.e. (B, 49, 49)]
+        # These have non-learnable similarity function
         global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices(
             encoded_video, self.temperature, self.edge_dropout_rate
         )
+
+        # TODO: Could be implemented in the future. Not in the original paper.
+        # # Learnable similarity function
+        # # video shape: (B, T, N, D)
+        # global_affinity_matrix = self.model.self_similarity(video)
 
         # Compute loss here
         loss = self.contrastive_random_walk_loss(global_affinity_matrix)
