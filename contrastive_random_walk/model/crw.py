@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 from contrastive_random_walk.model.encoders import VideoEncoder
 from contrastive_random_walk.model.similarity import get_affinity_matrices
+from contrastive_random_walk.viz.visualize_utils import draw_matches, pca_feats_top_3K_components
 
 import lightning as L
 
@@ -110,7 +111,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         self.learning_rate = learning_rate
 
     def training_step(self, batch, batch_idx):
-        video = batch
+        video_patches, video = batch[0], batch[1]
 
         encoded_video = self.model(video)
 
@@ -135,9 +136,13 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         return loss
     
     def validation_step(self, batch, batch_idx):
-        video = batch
-        global_affinity_matrix = self.model(video)
+        video_patches, video = batch[0], batch[1]
 
+        encoded_video = self.model(video_patches)
+
+        global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices(
+            encoded_video, self.temperature, self.edge_dropout_rate
+        )
         # Compute loss here
         loss = self.contrastive_random_walk_loss(global_affinity_matrix)
 
@@ -148,3 +153,12 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
+
+
+    def visualize(self, video):
+        # Video is the original, unpatched video
+
+        # Encode the video using the video encoder
+        encoded_video = self.model(video)
+
+

@@ -139,5 +139,5 @@ class KineticsCustomTest():
         video_patches = np.stack(video_patches)
 
         # video_patches has dimensions (2*clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
-        return video_patches 
+        return video_patches, video
     
