@@ -23,6 +23,7 @@ class KineticsCustom(Kinetics):
         num_classes=400,
         transform_video=None,
         tranformations_frame=None,
+        return_palindrome=False
     ):
         super(KineticsCustom, self).__init__(
             root,
@@ -46,9 +47,12 @@ class KineticsCustom(Kinetics):
             _precomputed_metadata,
         )
         self.tranformations_frame = tranformations_frame
+        self.return_palindrome = return_palindrome
 
     def __getitem__(self, idx):
+        # Get the video from the index
         video = self.get_video_from_index(idx)
+        # video shape: (T, H, W, C) and channels dimension is last
 
         # Transform each frame as follows:
         # 1. Convert the frame to a 256*256 image
@@ -72,13 +76,17 @@ class KineticsCustom(Kinetics):
             )
             video_patches.append(modified_patches)
 
-        # transform the list into a palindrome:
-        video_patches = make_palindrome(video_patches)
+        # # transform the list into a palindrome:
+        if self.return_palindrome:
+            video_patches = make_palindrome(video_patches)
 
         video_patches = np.stack(video_patches)
 
-        # video_patches has dimensions (2*clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
-        return video_patches 
+        # video shape: (T, H, W, C) and channels dimension is last
+        video = video.unsqueeze(1) # T, NxN, H, W, C where N == 1
+
+        # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
+        return video_patches, video
 
     def get_video_from_index(self, idx):
         video, _, _, _ = self.video_clips.get_clip(idx)
@@ -90,10 +98,11 @@ class KineticsCustom(Kinetics):
 
 
 class KineticsCustomTest():
-    def __init__(self, dummy_video, transform_video=None, tranformations_frame=None):
+    def __init__(self, dummy_video, transform_video=None, tranformations_frame=None, return_palindrome=False):
         self.dummy_video = dummy_video
         self.transform_video = transform_video
         self.tranformations_frame = tranformations_frame
+        self.return_palindrome = return_palindrome
 
     def get_video_from_index(self, idx):
         dummy_video = self.transform_video(self.dummy_video)
@@ -133,10 +142,14 @@ class KineticsCustomTest():
         # print time taken in seconds for patch extraction
         print("Time taken for patch extraction in seconds: ", time_end - time_start)
 
-        # transform the list into a palindrome:
-        video_patches = make_palindrome(video_patches)
+        # # transform the list into a palindrome:
+        if self.return_palindrome:
+            video_patches = make_palindrome(video_patches)
 
         video_patches = np.stack(video_patches)
+
+        # video shape: (T, H, W, C) and channels dimension is last
+        video = video.unsqueeze(1) # T, NxN, H, W, C where N == 1
 
         # video_patches has dimensions (2*clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
         return video_patches, video

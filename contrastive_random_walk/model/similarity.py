@@ -109,3 +109,46 @@ def get_affinity_matrices(input, temperature=1.0, edge_dropout_rate=0.5):
 
     return global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices
 
+
+def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.5):
+    """
+    Multiplies the local affinity matrices to get the global affinity matrix.
+    """
+    local_affinity_matrices = get_local_affinity_matrices(input, temperature)
+
+    edge_dropped_local_affinity_matrices = edge_dropout(
+        local_affinity_matrices, edge_dropout_rate
+    )
+
+    # edge_dropped_local_affinity_matrices shape: (B, T-1, N, N)
+    
+
+    # Renormalize the edge-dropped local affinity matrices
+    edge_dropped_local_affinity_matrices = (
+        edge_dropped_local_affinity_matrices
+        / edge_dropped_local_affinity_matrices.sum(dim=-1, keepdim=True)
+    )
+
+    # Assert that the sum of each row is equal to 1
+    assert torch.isclose(
+        edge_dropped_local_affinity_matrices.sum(dim=-1),
+        torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
+    ).all()
+
+
+    # Extract global affinity matrix for each walk. Walks are defined as the palindromic sequence of frames starting from frame 0.
+    # Walk 1: 0-1-0
+    # Walk 2: 0-1-2-1-0
+    # Walk 3: 0-1-2-3-2-1-0
+    #...
+    # Walk T: 0-1-2-3-...-T-...-3-2-1-0
+
+    walks = dict()
+    for i in range(2, input.size(1)):
+        walk_front = torch.prod(edge_dropped_local_affinity_matrices[:, :i], dim=1)
+        walk_back = torch.prod(edge_dropped_local_affinity_matrices[:, i-2::-1], dim=1)
+        walks[i] = walk
+
+    global_affinity_matrix = torch.prod(edge_dropped_local_affinity_matrices, dim=1)
+
+    return global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices

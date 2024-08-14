@@ -23,6 +23,7 @@ class VideoList(data.Dataset):
                  frame_gap=1, 
                  transform=None, 
                  random_clip=True,
+                 return_palindrome=False
                  ):
         
         """
@@ -43,6 +44,7 @@ class VideoList(data.Dataset):
 
         self.random_clip = random_clip
         self.transform = transform
+        self.return_palindrome = return_palindrome
         
         f = open(self.filelist, 'r')
         self.jpgfiles = []
@@ -103,12 +105,13 @@ class VideoList(data.Dataset):
             # appending nd array to a list
             img_patches.append(modified_patches)
 
-        # transform the list into a palindrome:
-        img_patches = make_palindrome(img_patches)
+        # # transform the list into a palindrome:
+        if self.return_palindrome:
+            img_patches = make_palindrome(img_patches)
 
         img_patches = np.stack(img_patches)
 
-        # img_patches has dimensions (2*clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
+        # img_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
 
         # if self.transform is not None:
         #     imgs = self.transform(imgs)

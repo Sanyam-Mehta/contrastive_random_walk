@@ -2,8 +2,8 @@
 
 import os
 import ntpath
-from contrastive_random_walk.viz_utils import util
-from contrastive_random_walk.viz_utils import html
+from contrastive_random_walk.viz import util
+from contrastive_random_walk.viz import html
 from PIL import Image
 from io import BytesIO         # Python 3.x
 
@@ -28,7 +28,7 @@ class Visualizer():
             util.mkdirs([self.web_dir, self.img_dir])
 
     # |visuals|: dictionary of images to display or save
-    def display_current_results(self, visuals, step, dataset_image_list=None):
+    def display_current_results(self, visuals, step):
 
         display_scores = False
 
@@ -69,15 +69,15 @@ class Visualizer():
             webpage = html.HTML(self.web_dir, self.name, refresh=5000)
             for n in range(step, 0, -self.freq):
                 #webpage.add_header('step [%d]' % n)
-                if dataset_image_list is not None:
-                   mission_name, img_name = dataset_image_list[n].parts[-2:]
-                else:
-                   mission_name, img_name = "", ""
+                # if dataset_image_list is not None:
+                #    mission_name, img_name = dataset_image_list[n].parts[-2:]
+                # else:
+                #    mission_name, img_name = "", ""
                 
-                if display_scores:
-                    webpage.add_header(f'mission_name: {mission_name} img name: {img_name}' )
-                else:
-                    webpage.add_header(f'mission_name: {mission_name} img name: {img_name}')
+                # if display_scores:
+                #     webpage.add_header(f'mission_name: {mission_name} img name: {img_name}' )
+                # else:
+                #     webpage.add_header(f'mission_name: {mission_name} img name: {img_name}')
                 ims = []
                 txts = []
                 links = []

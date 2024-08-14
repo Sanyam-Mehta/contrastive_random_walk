@@ -1,8 +1,13 @@
 import torch.nn as nn
 import torch
 from contrastive_random_walk.model.encoders import VideoEncoder
-from contrastive_random_walk.model.similarity import get_affinity_matrices
+from contrastive_random_walk.model.similarity import get_affinity_matrices, get_affinity_matrices_all_walks
 from contrastive_random_walk.viz.visualize_utils import draw_matches, pca_feats_top_3K_components
+from contrastive_random_walk.viz.visualizer import Visualizer
+
+import numpy as np
+
+from collections import OrderedDict
 
 import lightning as L
 
@@ -49,12 +54,14 @@ class ContrastiveRandomWalk(nn.Module):
     def __init__(
         self,
         resnet_type="resnet18",
-        output_dim=128
+        output_dim=128,
+        visualizer=None,
     ):
         super(ContrastiveRandomWalk, self).__init__()
         self.video_encoder = VideoEncoder(
             resnet_type=resnet_type, output_dim=output_dim
         )
+        self.visualizer = visualizer
 
     def forward(self, video):
         # video shape: (B, T, N, H, W, C)
@@ -98,6 +105,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         temperature=1.0,
         edge_dropout_rate=0.5,
         learning_rate=1e-3,
+        palindromic_dataset=False,
     ):
         super(ContrastiveRandomWalkLightningWrapper, self).__init__()
         self.model = ContrastiveRandomWalk(
@@ -109,29 +117,51 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # self.learnable_self_similarity = LearnableSimilarity()
         self.contrastive_random_walk_loss = ContrastiveRandomWalkLoss()
         self.learning_rate = learning_rate
+        self.palindromic_dataset = palindromic_dataset
 
     def training_step(self, batch, batch_idx):
         video_patches, video = batch[0], batch[1]
 
-        encoded_video = self.model(video)
+        encoded_video = self.model(video_patches)
 
         # enoded_video shape: (B, T, N, D)
 
         # Compute the global affinity matrix (B x N x N) [i.e. (B, 49, 49)]
         # These have non-learnable similarity function
-        global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices(
-            encoded_video, self.temperature, self.edge_dropout_rate
-        )
-
+        # global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices(
+        #     encoded_video, self.temperature, self.edge_dropout_rate
+        # )
         # TODO: Could be implemented in the future. Not in the original paper.
         # # Learnable similarity function
         # # video shape: (B, T, N, D)
         # global_affinity_matrix = self.model.self_similarity(video)
 
         # Compute loss here
-        loss = self.contrastive_random_walk_loss(global_affinity_matrix)
+        # loss = self.contrastive_random_walk_loss(global_affinity_matrix)
+
+        global_affinity_matrix_all_walks_dict, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices_all_walks(
+            encoded_video, self.temperature, self.edge_dropout_rate
+        )
+
+        # Compute loss here
+        loss_all_walks = []
+
+        # TODO: Loss could be weighted by the length of the walk.
+        for walk_len, global_affinity_matrix in global_affinity_matrix_all_walks_dict.items():
+            loss_all_walks.append(self.contrastive_random_walk_loss(global_affinity_matrix))
+
+        # Take the mean of the losses
+        loss = torch.mean(torch.stack(loss_all_walks))
+
+        if self.current_epoch % 10 == 0:
+            # Visualize the video
+            self.get_visuals(video)
+
 
         self.log("train_loss", loss)
+
+        # if epoch is divisible by 10, visualize the video
+        
 
         return loss
     
@@ -140,11 +170,19 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
         encoded_video = self.model(video_patches)
 
-        global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices(
+        global_affinity_matrix_all_walks_dict, local_affinity_matrices, edge_dropped_local_affinity_matrices = get_affinity_matrices_all_walks(
             encoded_video, self.temperature, self.edge_dropout_rate
         )
+
         # Compute loss here
-        loss = self.contrastive_random_walk_loss(global_affinity_matrix)
+        loss_all_walks = []
+
+        # TODO: Loss could be weighted by the length of the walk.
+        for walk_len, global_affinity_matrix in global_affinity_matrix_all_walks_dict.items():
+            loss_all_walks.append(self.contrastive_random_walk_loss(global_affinity_matrix))
+
+        # Take the mean of the losses
+        loss = torch.mean(torch.stack(loss_all_walks))
 
         self.log("val_loss", loss)
 
@@ -155,10 +193,66 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         return optimizer
 
 
-    def visualize(self, video):
+    def get_visuals(self, video, step):
+
         # Video is the original, unpatched video
+        # Dimensions: B, T, 1, H, W, C (H==W)
+        assert video.shape[2] == 1, "Video should have only one patch"
+        assert video.shape[3] == video.shape[4], "Height and width should be equal"
 
         # Encode the video using the video encoder
         encoded_video = self.model(video)
+        # encoded_video shape: (B, T, N, D)
+
+        # randomly select two frames from batch 0
+        t1, t2 = np.random.randint(0, encoded_video.shape[1], (2))
+
+        # extract the features for the two frames
+        frame1_descriptors = encoded_video[0, t1] # shape: (N, D)
+        frame2_descriptors = encoded_video[0, t2]
+
+        # extract tensor for the two frames
+        frame1 = video[0, t1, 0]
+        frame2 = video[0, t2, 0]
+
+        # Convert the tensor to numpy array, cv2 expect channels to be last
+        image_1 = frame1.cpu().numpy()
+        image_2 = frame2.cpu().numpy()
+
+        # draw matches between the two frames using draw_matches function
+        drawn_matches = draw_matches(
+            image_1=image_1,
+            image_2=image_2,
+            embeddings_image_1=frame1_descriptors,
+            embeddings_image_2=frame2_descriptors,
+        )
+
+        # extract one video clip from batch 0 and visualize top 3K components using pca_feats_top_3K_components function
+        video_clip = video[0].squeeze(1) # shape: (T, H, W, C)
+
+        # Apply PCA to the video clip
+        pca_output = pca_feats_top_3K_components(video_clip)
+
+
+        # ############## Display results and errors ############
+        # if self.opt.isTrain:
+        #     self.trainingavgloss = np.mean(self.averageloss)
+        #     if self.opt.verbose:
+        #         print ('  Iter: %d, Loss: %f' % (step, self.trainingavgloss) )
+        #     self.writer.add_scalar(self.opt.name+'/trainingloss/', self.trainingavgloss, step)
+        #     self.averageloss = []
+
+        ordered_dict = OrderedDict(
+                [
+                    ('frame_1_idx', t1),
+                    ('frame_2_idx', t2),
+                    ('drawn_matches', drawn_matches),
+                    ('pca_output', pca_output),
+                ]
+            )
+        return ordered_dict
+
+
+
 
 
