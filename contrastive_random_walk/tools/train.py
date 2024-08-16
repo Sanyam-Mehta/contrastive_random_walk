@@ -1,13 +1,28 @@
-import torch
-from contrastive_random_walk.model.crw import ContrastiveRandomWalkLightningWrapper
-from contrastive_random_walk.data.kinetics_dataset import KineticsCustom
 import lightning as L
+import torch
+from contrastive_random_walk.data.kinetics_dataset import KineticsCustom
+from contrastive_random_walk.model.crw import ContrastiveRandomWalkLightningWrapper
+from contrastive_random_walk.viz.visualizer import Visualizer
 from torchvision import transforms as T
 
 
+# Initialize the visualizer
+visualizer = Visualizer(
+    tf_log=True,
+    use_html=True,
+    win_size=256,
+    name="contrastive_random_walk_train",
+    freq=100,  # every 100 epochs
+)
+
 # Initialize the model
 model = ContrastiveRandomWalkLightningWrapper(
-    resnet_type="resnet18", output_dim=128, temperature=1.0, edge_dropout_rate=0.5, learning_rate=1e-3
+    resnet_type="resnet18",
+    output_dim=128,
+    temperature=1.0,
+    edge_dropout_rate=0.5,
+    learning_rate=1e-3,
+    visualizer=visualizer,
 )
 
 transforms_video = T.Compose(
@@ -47,7 +62,7 @@ val_dataset = KineticsCustom(
     num_classes=400,
     transform_video=transforms_video,
     tranformations_frame=tranformations_frame,
-)   
+)
 
 test_dataset = KineticsCustom(
     root="data/kinetics400",
@@ -61,9 +76,13 @@ test_dataset = KineticsCustom(
     tranformations_frame=tranformations_frame,
 )
 
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
+train_dataloader = torch.utils.data.DataLoader(
+    train_dataset, batch_size=16, shuffle=True
+)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=16, shuffle=False)
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
+test_dataloader = torch.utils.data.DataLoader(
+    test_dataset, batch_size=16, shuffle=False
+)
 
 # Each element in the dataset is a tensor of size (2*T, NxN, H, W, C), where:
 # T: clip length

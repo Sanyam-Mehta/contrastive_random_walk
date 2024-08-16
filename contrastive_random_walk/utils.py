@@ -1,5 +1,5 @@
 import numpy as np
-import albumentations as A
+
 
 def patchify_image(image, patch_size):
     """
@@ -79,27 +79,33 @@ def extract_patches_with_jitter(image, transforms=None):
     patches = []
 
     new_image_size = 448
-    new_image = np.zeros((new_image_size, new_image_size, image.shape[2]), dtype=image.dtype) if len(image.shape) == 3 else np.zeros((new_image_size, new_image_size), dtype=image.dtype)
+    new_image = (
+        np.zeros((new_image_size, new_image_size, image.shape[2]), dtype=image.dtype)
+        if len(image.shape) == 3
+        else np.zeros((new_image_size, new_image_size), dtype=image.dtype)
+    )
 
     for i in range(7):
         for j in range(7):
             x_start = i * stride
             y_start = j * stride
-            patch = image[x_start:x_start + patch_size, y_start:y_start + patch_size]
+            patch = image[
+                x_start : x_start + patch_size, y_start : y_start + patch_size
+            ]
 
             # Implement jittering here (RandomResizedCrop, use A.RandomResizedCrop)
             augmented = transforms(image=patch)
-            jittered_patch = augmented['image']
+            jittered_patch = augmented["image"]
 
             new_x_start = i * patch_size
             new_y_start = j * patch_size
-            new_image[new_x_start:new_x_start + patch_size, new_y_start:new_y_start + patch_size] = jittered_patch
-
+            new_image[
+                new_x_start : new_x_start + patch_size,
+                new_y_start : new_y_start + patch_size,
+            ] = jittered_patch
 
             patches.append(jittered_patch)
 
     # patches is a list of 49 patches, each of size 64x64
 
     return new_image, np.array(patches)
-
-

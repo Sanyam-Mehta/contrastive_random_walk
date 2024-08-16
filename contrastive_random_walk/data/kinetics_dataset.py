@@ -1,14 +1,14 @@
-import torchvision.datasets.video_utils
-
-from torchvision.datasets.video_utils import VideoClips
-from torchvision.datasets.utils import list_dir
-from torchvision.datasets.folder import make_dataset
-from torchvision.datasets.kinetics import Kinetics
-
-from contrastive_random_walk.utils import extract_patches_with_jitter, make_palindrome
+import time
 
 import numpy as np
-import time 
+
+from contrastive_random_walk.utils import extract_patches_with_jitter, make_palindrome
+from torchvision.datasets.folder import make_dataset
+from torchvision.datasets.kinetics import Kinetics
+from torchvision.datasets.utils import list_dir
+
+from torchvision.datasets.video_utils import VideoClips
+
 
 class KineticsCustom(Kinetics):
     def __init__(
@@ -23,21 +23,23 @@ class KineticsCustom(Kinetics):
         num_classes=400,
         transform_video=None,
         tranformations_frame=None,
-        return_palindrome=False
+        return_palindrome=False,
     ):
         super(KineticsCustom, self).__init__(
             root,
-            frames_per_clip = frames_per_clip,
-            split = split,
-            step_between_clips = step_between_clips,
-            frame_rate = frame_rate,
-            extensions = extensions,
-            transform = transform_video,
-            num_classes = num_classes,
+            frames_per_clip=frames_per_clip,
+            split=split,
+            step_between_clips=step_between_clips,
+            frame_rate=frame_rate,
+            extensions=extensions,
+            transform=transform_video,
+            num_classes=num_classes,
         )
         self.classes = list(sorted(list_dir(root)))
         self.class_to_idx = {self.classes[i]: i for i in range(len(self.classes))}
-        self.samples = make_dataset(self.root, self.class_to_idx, extensions, is_valid_file=None)
+        self.samples = make_dataset(
+            self.root, self.class_to_idx, extensions, is_valid_file=None
+        )
         video_list = [x[0] for x in self.samples]
         self.video_clips = VideoClips(
             video_list,
@@ -83,7 +85,7 @@ class KineticsCustom(Kinetics):
         video_patches = np.stack(video_patches)
 
         # video shape: (T, H, W, C) and channels dimension is last
-        video = video.unsqueeze(1) # T, NxN, H, W, C where N == 1
+        video = video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
         return video_patches, video
@@ -93,12 +95,17 @@ class KineticsCustom(Kinetics):
 
         # video shape: (T, H, W, C) and channels dimension is last
         assert video.shape[3] == 3, "Video should have 3 channels"
-        return video# video, audio, self.class_to_idx[info["label"]]
-    
+        return video  # video, audio, self.class_to_idx[info["label"]]
 
 
-class KineticsCustomTest():
-    def __init__(self, dummy_video, transform_video=None, tranformations_frame=None, return_palindrome=False):
+class KineticsCustomTest:
+    def __init__(
+        self,
+        dummy_video,
+        transform_video=None,
+        tranformations_frame=None,
+        return_palindrome=False,
+    ):
         self.dummy_video = dummy_video
         self.transform_video = transform_video
         self.tranformations_frame = tranformations_frame
@@ -107,7 +114,6 @@ class KineticsCustomTest():
     def get_video_from_index(self, idx):
         dummy_video = self.transform_video(self.dummy_video)
         return dummy_video
-    
 
     def __getitem__(self, idx):
         video = self.get_video_from_index(idx)
@@ -149,8 +155,7 @@ class KineticsCustomTest():
         video_patches = np.stack(video_patches)
 
         # video shape: (T, H, W, C) and channels dimension is last
-        video = video.unsqueeze(1) # T, NxN, H, W, C where N == 1
+        video = video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
 
         # video_patches has dimensions (2*clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
         return video_patches, video
-    

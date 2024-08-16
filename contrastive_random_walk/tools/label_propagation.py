@@ -1,14 +1,16 @@
 # Refer notes and video: https://www.youtube.com/watch?v=UaOcjxrPaho
 
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
 
-def get_label_propagation_matrix(query_frame, target_frame, crw_model, temperature=1.0, top_k=5):    
 
+def get_label_propagation_matrix(
+    query_frame, target_frame, crw_model, temperature=1.0, top_k=5
+):
     """
-        query_frame: np.array : Query frame of shape (H, W, C)
-        target_frame: np.array : Target frame of shape (H, W, C)
+    query_frame: np.array : Query frame of shape (H, W, C)
+    target_frame: np.array : Target frame of shape (H, W, C)
     """
 
     with torch.no_grad():
@@ -18,12 +20,12 @@ def get_label_propagation_matrix(query_frame, target_frame, crw_model, temperatu
 
         query = torch.tensor(query_frame).unsqueeze(0).unsqueeze(0).unsqueeze(0)
         target = torch.tensor(target_frame).unsqueeze(0).unsqueeze(0).unsqueeze(0)
-       
+
         features = crw_model(torch.cat((query, target), dim=0))
 
         # Get the embeddings for the query and target videos
-        query_embeddings = features[:query.shape[0]]
-        target_embeddings = features[query.shape[0]:]
+        query_embeddings = features[: query.shape[0]]
+        target_embeddings = features[query.shape[0] :]
 
         assert query_embeddings.shape == target_embeddings.shape
         assert len(query_embeddings.shape) == 4
@@ -31,7 +33,9 @@ def get_label_propagation_matrix(query_frame, target_frame, crw_model, temperatu
         # query_embeddings shape: (B, T, N, D) and target_embeddings shape: (B, T, N, D)
 
         # Calculate the similarity matrix
-        correlation_matrix = torch.einsum("btnd,btmd->btnm", query_embeddings, target_embeddings)
+        correlation_matrix = torch.einsum(
+            "btnd,btmd->btnm", query_embeddings, target_embeddings
+        )
 
         # Compute the row-wise softmax of the correlation matrix
         probability_matrix = F.softmax(correlation_matrix / temperature, dim=-1)
@@ -45,30 +49,30 @@ def get_label_propagation_matrix(query_frame, target_frame, crw_model, temperatu
         # Therefore, the dimension along which we want to extract the top-k elements is the last dimension
         weights, ids = torch.topk(probability_matrix, top_k, dim=-1)
 
-
         # weights shape: (B, T, N, K) and ids shape: (B, T, N, K)
         # Reweight the probability matrix
         weights = F.softmax(weights, dim=-1)
-        
+
         # weights: for each batch, for each time frame, for each query node, we have a distribution over top-k target nodes
         # ids: for each batch, for each time frame, for each query node, we have the indexes of the top-k target nodes
 
     return weights.cpu(), ids.cpu()
 
-        
 
 def propagate_labels(unlabelled_frame, labelled_frame, labels, crw_model):
     """
-        unlabelled_frame: np.array : Unlabelled frame of shape (H, W, C)
-        labelled_frame: np.array : Labelled frame of shape (H, W, C)
-        labels: np.array : Labels of shape (N X C) [C is the number of classes]
-        crw_model: torch.nn.Module : ContrastiveRandomWalk model
+    unlabelled_frame: np.array : Unlabelled frame of shape (H, W, C)
+    labelled_frame: np.array : Labelled frame of shape (H, W, C)
+    labels: np.array : Labels of shape (N X C) [C is the number of classes]
+    crw_model: torch.nn.Module : ContrastiveRandomWalk model
 
-        The idea here is to extract the weights and indexes of the top-k target nodes, and then calculate a weighted sum of the labels of the top-k target nodes to obtain the label for the query node
+    The idea here is to extract the weights and indexes of the top-k target nodes, and then calculate a weighted sum of the labels of the top-k target nodes to obtain the label for the query node
     """
 
     # Get the label propagation matrix
-    weights, ids = get_label_propagation_matrix(unlabelled_frame, labelled_frame, crw_model)
+    weights, ids = get_label_propagation_matrix(
+        unlabelled_frame, labelled_frame, crw_model
+    )
 
     # Weights should have dimensions (N, K) and ids should have dimensions (N, K)
     weights = weights.squeeze(0).squeeze(0)
@@ -88,17 +92,17 @@ def propagate_labels(unlabelled_frame, labelled_frame, labels, crw_model):
     # TODO -> Write a function to visualize the heatmap (check original code)
     # The idea is to use the propagated labels, and:
     # 1. Upsample the propagated labels to the size of the frame (N X C)
-    # 2. For each 
+    # 2. For each
 
     return propagated_labels.cpu()
 
 
 def visualize_heatmap(frame, labels, weights, ids):
     """
-        frame: np.array : Frame of shape (H, W, C)
-        labels: np.array : Labels of shape (N X C) [C is the number of classes]
-        weights: np.array : Weights of shape (N, K)
-        ids: np.array : Indexes of the top-k target nodes of shape (N, K)
+    frame: np.array : Frame of shape (H, W, C)
+    labels: np.array : Labels of shape (N X C) [C is the number of classes]
+    weights: np.array : Weights of shape (N, K)
+    ids: np.array : Indexes of the top-k target nodes of shape (N, K)
     """
 
     # Get the coordinates of the query node
@@ -127,6 +131,3 @@ def visualize_heatmap(frame, labels, weights, ids):
     plt.imshow(frame)
     plt.imshow(heatmap, alpha=0.5)
     plt.show()
-
- 
-        

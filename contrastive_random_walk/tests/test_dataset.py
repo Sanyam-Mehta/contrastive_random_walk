@@ -1,7 +1,8 @@
 import numpy as np
-from contrastive_random_walk.data.kinetics_dataset import KineticsCustomTest
-import torchvision.transforms as T
 import torch
+import torchvision.transforms as T
+from contrastive_random_walk.data.kinetics_dataset import KineticsCustomTest
+
 
 def test_kinetics_custom_transformations():
 
@@ -23,7 +24,9 @@ def test_kinetics_custom_transformations():
     # Create a dummy video (e.g., 10 frames of 256x256 RGB images)
     num_frames = 10
     height, width, channels = 448, 448, 3
-    dummy_video = np.random.randint(0, 256, (num_frames, height, width, channels), dtype=np.uint8)
+    dummy_video = np.random.randint(
+        0, 256, (num_frames, height, width, channels), dtype=np.uint8
+    )
 
     # dummy_video has the shape (10, 1024, 956, 3)
 
@@ -35,7 +38,7 @@ def test_kinetics_custom_transformations():
     kinetics_custom_dataset = KineticsCustomTest(
         dummy_video=dummy_video_tensor,
         transform_video=transforms_video,
-        tranformations_frame=tranformations_frame
+        tranformations_frame=tranformations_frame,
     )
 
     # Apply transformations to the dummy video
@@ -44,8 +47,9 @@ def test_kinetics_custom_transformations():
     print(video_patches.shape)
 
     # Check the output dimensions
-    
+
     print("All test cases passed (KineticsCustomTest)!")
+
 
 # Run the test
 test_kinetics_custom_transformations()

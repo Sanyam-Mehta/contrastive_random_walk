@@ -1,11 +1,10 @@
-import torchvision.datasets.video_utils
+import numpy as np
+from torchvision.datasets.folder import make_dataset
+from torchvision.datasets.utils import list_dir
 
 from torchvision.datasets.video_utils import VideoClips
-from torchvision.datasets.utils import list_dir
-from torchvision.datasets.folder import make_dataset
 from torchvision.datasets.vision import VisionDataset
 
-import numpy as np
 
 class Kinetics400(VisionDataset):
     """
@@ -39,15 +38,26 @@ class Kinetics400(VisionDataset):
         label (int): class of the video clip
     """
 
-    def __init__(self, x, frames_per_clip, step_between_clips=1, frame_rate=None,
-                 extensions=('mp4',), transform=None, cached=None, _precomputed_metadata=None):
+    def __init__(
+        self,
+        x,
+        frames_per_clip,
+        step_between_clips=1,
+        frame_rate=None,
+        extensions=("mp4",),
+        transform=None,
+        cached=None,
+        _precomputed_metadata=None,
+    ):
         super(Kinetics400, self).__init__(root)
         extensions = extensions
 
         classes = list(sorted(list_dir(root)))
         class_to_idx = {classes[i]: i for i in range(len(classes))}
-        
-        self.samples = make_dataset(self.root, class_to_idx, extensions, is_valid_file=None)
+
+        self.samples = make_dataset(
+            self.root, class_to_idx, extensions, is_valid_file=None
+        )
         self.classes = classes
         video_list = [x[0] for x in self.samples]
         self.video_clips = VideoClips(
@@ -69,7 +79,7 @@ class Kinetics400(VisionDataset):
                 video, audio, info, video_idx = self.video_clips.get_clip(idx)
                 success = True
             except:
-                print('skipped idx', idx)
+                print("skipped idx", idx)
                 idx = np.random.randint(self.__len__())
 
         label = self.samples[video_idx][1]
