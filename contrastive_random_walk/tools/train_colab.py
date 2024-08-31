@@ -6,7 +6,8 @@ from contrastive_random_walk.viz.visualizer import Visualizer
 from torchvision import transforms as T
 
 print("Training Started")
-
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f"Device: {device}")
 # Initialize the visualizer
 visualizer = Visualizer(
     tf_log=True,
@@ -24,7 +25,7 @@ model = ContrastiveRandomWalkLightningWrapper(
     edge_dropout_rate=0.5,
     learning_rate=1e-3,
     visualizer=visualizer,
-)
+).to()
 
 transforms_video = T.Compose(
     [
