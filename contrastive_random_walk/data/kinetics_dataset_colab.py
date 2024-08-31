@@ -3,6 +3,7 @@ import time
 import numpy as np
 
 from contrastive_random_walk.utils import extract_patches_with_jitter, make_palindrome
+from torchvision import torch
 from torchvision.datasets.folder import make_dataset
 from torchvision.datasets.kinetics import Kinetics
 from torchvision.datasets.utils import list_dir
@@ -74,6 +75,14 @@ class KineticsCustom():
             video_patches = make_palindrome(video_patches)
 
         video_patches = np.stack(video_patches)
+
+        video_patches = torch.tensor(video_patches)
+
+        # print(video_patches.shape)
+        video_patches = video_patches.permute(0, 1, 3, 4, 2)
+
+        # print(video_patches.shape)
+        # print("Above Is video patches ka shape")
 
         # video shape: (T, H, W, C) and channels dimension is last
         video = video.unsqueeze(1)  # T, NxN, H, W, C where N == 1

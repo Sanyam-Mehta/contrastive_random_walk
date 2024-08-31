@@ -28,15 +28,21 @@ model = ContrastiveRandomWalkLightningWrapper(
 
 transforms_video = T.Compose(
     [
+        T.ToPILImage(),
         T.Resize(256),
         T.ColorJitter(),
+        T.ToTensor(),
+        T.Normalize()
     ]
 )
 
 tranformations_frame = T.Compose(
     [
+        T.ToPILImage(),
         # RandomResizedCrop is the spatial jitter transofrmation
         T.RandomResizedCrop((64, 64), scale=(0.7, 0.9), ratio=(0.7, 1.3)),
+        T.ToTensor(),
+        T.Normalize()
     ]
 )
 

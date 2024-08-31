@@ -81,7 +81,7 @@ def extract_patches_with_jitter(image, transforms=None):
 
     new_image_size = 448
     new_image = (
-        np.zeros((new_image_size, new_image_size, image.shape[2]), dtype=image.dtype)
+        np.zeros((image.shape[2], new_image_size, new_image_size), dtype=image.dtype)
         if len(image.shape) == 3
         else np.zeros((new_image_size, new_image_size), dtype=image.dtype)
     )
@@ -100,7 +100,13 @@ def extract_patches_with_jitter(image, transforms=None):
 
             new_x_start = i * patch_size
             new_y_start = j * patch_size
+
+            # print("*****************")
+            # print(patch_size, new_x_start, new_y_start)
+            # print(jittered_patch.shape)
+            # print(new_image.shape)
             new_image[
+                :,
                 new_x_start : new_x_start + patch_size,
                 new_y_start : new_y_start + patch_size,
             ] = jittered_patch
@@ -109,4 +115,4 @@ def extract_patches_with_jitter(image, transforms=None):
 
     # patches is a list of 49 patches, each of size 64x64
 
-    return new_image, np.array(patches)
+    return new_image, patches #np.array(patches)
