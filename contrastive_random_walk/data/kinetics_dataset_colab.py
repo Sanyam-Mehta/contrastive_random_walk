@@ -25,7 +25,6 @@ class KineticsCustom():
         tranformations_frame=None,
         return_palindrome=False,
     ):
-        super(KineticsCustom, self).__init__()
         self.classes = list(sorted(list_dir(root)))
         self.class_to_idx = {self.classes[i]: i for i in range(len(self.classes))}
         self.samples = make_dataset(
