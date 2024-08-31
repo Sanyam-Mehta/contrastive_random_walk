@@ -42,7 +42,7 @@ tranformations_frame = T.Compose(
 
 # TODO: Check if transforms are passed correctly
 train_dataset = KineticsCustom(
-    root="data/kinetics400",
+    root="/content/drive/MyDrive/data/kinetics/videos",
     split="train",
     frames_per_clip=5,
     step_between_clips=1,
