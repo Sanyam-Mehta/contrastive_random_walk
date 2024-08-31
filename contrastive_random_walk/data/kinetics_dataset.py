@@ -35,6 +35,7 @@ class KineticsCustom(Kinetics):
             transform=transform_video,
             num_classes=str(num_classes),
         )
+        self.root = root
         self.classes = list(sorted(list_dir(root)))
         self.class_to_idx = {self.classes[i]: i for i in range(len(self.classes))}
         self.samples = make_dataset(
