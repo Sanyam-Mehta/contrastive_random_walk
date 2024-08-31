@@ -9,24 +9,39 @@ from PIL import Image
 
 
 class Visualizer:
-    def __init__(self, config):
+    def __init__(self, 
+    tf_log=True,
+    use_html=True,
+    win_size=256,
+    name="contrastive_random_walk_train",
+    freq=100,
+    ):
         # self.opt = opt
-        self.tf_log = config.VISUALIZE.TF_LOG
-        self.use_html = config.VISUALIZE.IS_TRAIN and config.VISUALIZE.USE_HTML
-        self.win_size = config.VISUALIZE.DISPLAY_WIN_SIZE
-        self.name = config.VISUALIZE.NAME
-        self.freq = config.VISUALIZE.VISUALIZE_FREQUENCY
+        # self.tf_log = config.VISUALIZE.TF_LOG
+        # self.use_html = config.VISUALIZE.IS_TRAIN and config.VISUALIZE.USE_HTML
+        # self.win_size = config.VISUALIZE.DISPLAY_WIN_SIZE
+        # self.name = config.VISUALIZE.NAME
+        # self.freq = config.VISUALIZE.VISUALIZE_FREQUENCY
+        self.tf_log = tf_log
+        self.use_html = use_html
+        self.win_size = win_size
+        self.name = name
+        self.freq = freq
+        self.output_dir = "data/checkpoint"
+        self.viz_name = "exp1"
+        
         if self.tf_log:
             import tensorflow as tf
 
             self.tf = tf
+            self.tf.compat.v1.disable_eager_execution()
             self.log_dir = os.path.join(
-                config.OUTPUT_DIR, config.VISUALIZE.NAME, "logs"
+                self.output_dir, self.viz_name, "logs"
             )
             self.writer = tf.compat.v1.summary.FileWriter(self.log_dir)
 
         if self.use_html:
-            self.web_dir = os.path.join(config.OUTPUT_DIR, config.VISUALIZE.NAME, "web")
+            self.web_dir = os.path.join(self.output_dir, self.viz_name, "web")
             self.img_dir = os.path.join(self.web_dir, "images")
             print("create web directory %s..." % self.web_dir)
             util.mkdirs([self.web_dir, self.img_dir])

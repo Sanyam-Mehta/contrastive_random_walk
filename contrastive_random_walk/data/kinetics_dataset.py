@@ -33,7 +33,7 @@ class KineticsCustom(Kinetics):
             frame_rate=frame_rate,
             extensions=extensions,
             transform=transform_video,
-            num_classes=num_classes,
+            num_classes=str(num_classes),
         )
         self.classes = list(sorted(list_dir(root)))
         self.class_to_idx = {self.classes[i]: i for i in range(len(self.classes))}

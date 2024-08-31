@@ -112,8 +112,6 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         self.model = ContrastiveRandomWalk(
             resnet_type=resnet_type,
             output_dim=output_dim,
-            temperature=temperature,
-            edge_dropout_rate=edge_dropout_rate,
         )
         # self.learnable_self_similarity = LearnableSimilarity()
         self.contrastive_random_walk_loss = ContrastiveRandomWalkLoss()

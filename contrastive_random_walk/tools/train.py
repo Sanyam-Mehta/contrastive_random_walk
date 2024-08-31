@@ -5,6 +5,7 @@ from contrastive_random_walk.model.crw import ContrastiveRandomWalkLightningWrap
 from contrastive_random_walk.viz.visualizer import Visualizer
 from torchvision import transforms as T
 
+print("Training Started")
 
 # Initialize the visualizer
 visualizer = Visualizer(
