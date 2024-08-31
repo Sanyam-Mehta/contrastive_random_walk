@@ -81,6 +81,10 @@ class KineticsCustom():
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
         return video_patches, video
 
+    def __len__(self) -> int:
+      return self.video_clips.num_clips()
+
+
     def get_video_from_index(self, idx):
         video, _, _, _ = self.video_clips.get_clip(idx)
 

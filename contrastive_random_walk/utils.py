@@ -73,6 +73,7 @@ def extract_patches_with_jitter(image, transforms=None):
 
     P.S.: Spatial jittering in the original paper is a RandomResizedCrop operation
     """
+    image = image.detach().cpu().numpy()
     patch_size = 64
     stride = 32
 
@@ -94,8 +95,8 @@ def extract_patches_with_jitter(image, transforms=None):
             ]
 
             # Implement jittering here (RandomResizedCrop, use A.RandomResizedCrop)
-            augmented = transforms(image=patch)
-            jittered_patch = augmented["image"]
+            augmented = transforms(patch)
+            jittered_patch = augmented
 
             new_x_start = i * patch_size
             new_y_start = j * patch_size

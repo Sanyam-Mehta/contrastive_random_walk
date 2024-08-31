@@ -14,7 +14,7 @@ visualizer = Visualizer(
     use_html=True,
     win_size=256,
     name="contrastive_random_walk_train",
-    freq=100,  # every 100 epochs
+    freq=1,  # every 100 epochs
 )
 
 # Initialize the model
@@ -25,7 +25,7 @@ model = ContrastiveRandomWalkLightningWrapper(
     edge_dropout_rate=0.5,
     learning_rate=1e-3,
     visualizer=visualizer,
-).to()
+).to(device)
 
 transforms_video = T.Compose(
     [
@@ -52,7 +52,7 @@ train_dataset = KineticsCustom(
     num_classes=400,
     transform_video=transforms_video,
     tranformations_frame=tranformations_frame,
-).to(device)
+)
 
 # val_dataset = KineticsCustom(
 #     root="data/kinetics400",
@@ -79,9 +79,9 @@ train_dataset = KineticsCustom(
 # )
 
 train_dataloader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=16, shuffle=True
+    train_dataset, batch_size=64, shuffle=True
 )
-val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=False)
+val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=False)
 # test_dataloader = torch.utils.data.DataLoader(
 #     test_dataset, batch_size=16, shuffle=False
 # )
@@ -94,7 +94,7 @@ val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuff
 # C: number of channels in the input tensor (3)
 
 # Initialize the trainer
-trainer = L.Trainer(max_epochs=1)
+trainer = L.Trainer(max_epochs=5)
 
 # Train the model
 trainer.fit(model, train_dataloader, val_dataloader)
