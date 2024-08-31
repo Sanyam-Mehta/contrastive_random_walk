@@ -52,7 +52,7 @@ train_dataset = KineticsCustom(
     num_classes=400,
     transform_video=transforms_video,
     tranformations_frame=tranformations_frame,
-)
+).to(device)
 
 # val_dataset = KineticsCustom(
 #     root="data/kinetics400",
