@@ -70,7 +70,7 @@ class KineticsCustom():
         for i in range(video.shape[0]):
             # img shape is (H, W, C). It is a tensor of shape (64, 64, 3)
             img = video[i]
-            resized_img = img.copy().detach()
+            resized_img = img.clone().detach()
             resized_img = self.transform_video(resized_img)
 
             _, modified_patches = extract_patches_with_jitter(
