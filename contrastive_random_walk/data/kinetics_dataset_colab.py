@@ -54,10 +54,10 @@ class KineticsCustom():
 
     def __getitem__(self, idx):
         # Get the video from the index
-        print("Getting video from index")
+        # print("Getting video from index")
         video = self.get_video_from_index(idx)
-        print("Got video from index")
-        print("Video Shape: ", video.shape)
+        # print("Got video from index")
+        # print("Video Shape: ", video.shape)
         # video shape: (T, H, W, C) and channels dimension is last
 
         # Transform each frame as follows:
@@ -72,17 +72,17 @@ class KineticsCustom():
         # C is the number of channels in the input tensor (3)
 
         # Actual code begins here:
-        print("Starting patch extraction")
+        # print("Starting patch extraction")
         new_video = []
         video_patches = []
         for i in range(video.shape[0]):
             # img shape is (H, W, C). It is a tensor of shape (64, 64, 3)
             img = video[i].permute(2, 0, 1)
-            print("Image Shape: ", img.shape)
-            print("Transforming Image to 256*256")
-            print("Image Type: ", type(img))
+            # print("Image Shape: ", img.shape)
+            # print("Transforming Image to 256*256")
+            # print("Image Type: ", type(img))
             img = self.transform_video(img)
-            print("Transformed Image Shape: ", img.shape)
+            # print("Transformed Image Shape: ", img.shape)
             img = img.permute(1, 2, 0)
             _, modified_patches = extract_patches_with_jitter(
                 img,
@@ -92,7 +92,7 @@ class KineticsCustom():
             new_video.append(tranformations_final(img.permute(2, 0, 1)).permute(1, 2, 0))
 
        
-        print("Patch extraction done")
+        # print("Patch extraction done")
         # # transform the list into a palindrome:
         if self.return_palindrome:
             video_patches = make_palindrome(video_patches)
@@ -111,7 +111,7 @@ class KineticsCustom():
 
         # video shape: (T, H, W, C) and channels dimension is last
         video = new_video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
-        print("Shape of video: ", video.shape)
+        # print("Shape of video: ", video.shape)
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
         return video_patches, video
