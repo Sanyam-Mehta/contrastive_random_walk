@@ -70,17 +70,16 @@ class KineticsCustom():
         for i in range(video.shape[0]):
             # img shape is (H, W, C). It is a tensor of shape (64, 64, 3)
             img = video[i]
-            resized_img = img.clone().detach()
-            resized_img = self.transform_video(resized_img)
-
+            print("Image Shape: ", img.shape)
+            print("Transforming Image to 256*256")
+            print("Image Type: ", type(img))
+            img = self.transform_video(img)
+            print("Transformed Image Shape: ", img.shape)
             _, modified_patches = extract_patches_with_jitter(
                 img,
                 transforms=self.tranformations_frame,
             )
-            video_patches.append(modified_patches)
-
-            # create new video
-            new_video.append(resized_img)
+            new_video.append(img)
 
        
         print("Patch extraction done")
