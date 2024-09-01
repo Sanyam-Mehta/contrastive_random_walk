@@ -236,8 +236,11 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
         video = torch.nn.functional.interpolate(video, size=(448, 448))
 
+        # divide it into 16x16 patches
+        grid_size = 16
         patchified_video = divide_image_into_patches(
-            einops.rearrange(video, "(B T) C H W -> (B T) H W C", B=B, T=T)
+            einops.rearrange(video, "(B T) C H W -> (B T) H W C", B=B, T=T),
+            grid_size=grid_size,
         )
 
         patchified_video = einops.rearrange(
@@ -278,6 +281,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             image_2=image_2,
             embeddings_image_1=frame1_descriptors,
             embeddings_image_2=frame2_descriptors,
+            grid_size=grid_size,
         )
 
         # extract one video clip from batch 0 and visualize top 3K components using pca_feats_top_3K_components function
