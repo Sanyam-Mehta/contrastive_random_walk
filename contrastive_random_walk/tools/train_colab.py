@@ -12,7 +12,7 @@ print(f"Device: {device}")
 
 transforms_video = T.Compose(
     [
-        T.ToPILImage(),
+        # T.ToPILImage(),
         T.Resize(256),
         T.ColorJitter(),
         T.ToTensor(),
