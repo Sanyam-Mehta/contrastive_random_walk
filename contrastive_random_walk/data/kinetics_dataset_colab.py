@@ -65,15 +65,22 @@ class KineticsCustom():
 
         # Actual code begins here:
         print("Starting patch extraction")
-        video_patches = []
+        new_video = []
+        video_patches = torch.tensor([])
         for i in range(video.shape[0]):
             # img shape is (H, W, C). It is a tensor of shape (64, 64, 3)
             img = video[i]
+            resized_img = img.copy().detach()
+            resized_img = self.transform_video(resized_img)
+
             _, modified_patches = extract_patches_with_jitter(
                 img,
                 transforms=self.tranformations_frame,
             )
             video_patches.append(modified_patches)
+
+            # create new video
+            new_video.append(resized_img)
 
        
         print("Patch extraction done")
@@ -91,11 +98,14 @@ class KineticsCustom():
         # print(video_patches.shape)
         # print("Above Is video patches ka shape")
 
+        new_video = torch.stack(tuple(new_video))
+
         # video shape: (T, H, W, C) and channels dimension is last
-        video = video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
+        video = new_video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
+        print("Shape of video: ", video.shape)
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
-        return video_patches, video
+        return video_patches, new_video
 
     def __len__(self) -> int:
       return self.video_clips.num_clips()
@@ -108,9 +118,9 @@ class KineticsCustom():
         # video = self.transform_video(video)
 
         # Transform the vide frame by frame
-        print("Transforming video frame by frame")
-        for i in range(video.shape[0]):
-            video[i] = self.transform_video(video[i])
+        # print("Transforming video frame by frame")
+        # for i in range(video.shape[0]):
+        #     video[i] = self.transform_video(video[i])
 
         # video shape: (T, H, W, C) and channels dimension is last
         assert video.shape[3] == 3, "Video should have 3 channels"
