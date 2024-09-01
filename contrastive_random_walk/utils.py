@@ -40,7 +40,7 @@ def patchify_image(image, patch_size):
 
 import torch
 
-def divide_image_into_patches(images):
+def divide_image_into_patches(images, grid_size=7):
     """
         # Example usage
         B, H, W, C = 16, 448, 448, 3
@@ -54,13 +54,13 @@ def divide_image_into_patches(images):
     assert H == W == 448, "Height and Width must be 448."
     
     # Reshape and permute to get patches of shape (B, 49, H/7, W/7, C)
-    patches = images.view(B, 7, H // 7, 7, W // 7, C)
+    patches = images.view(B, grid_size, H // grid_size, grid_size, W // grid_size, C)
     patches = patches.permute(0, 1, 3, 2, 4, 5).contiguous()
-    patches = patches.view(B, 49, H // 7, W // 7, C)
+    patches = patches.view(B, grid_size*grid_size, H // grid_size, W // grid_size, C)
     
     return patches
 
-def combine_patches_into_image(patches):
+def combine_patches_into_image(patches, grid_size=7):
     """
         # Example usage
         patches = torch.randn(16, 49, 64, 64, 3)
@@ -69,16 +69,15 @@ def combine_patches_into_image(patches):
     """
     # patches: Tensor of shape (B, 49, H//7, W//7, C)
     B, num_patches, h, w, C = patches.shape
-    assert num_patches == 49, "Number of patches must be 49."
     
     # Reshape the tensor to (B, 7, 7, H//7, W//7, C)
-    patches = patches.view(B, 7, 7, h, w, C)
+    patches = patches.view(B, grid_size, grid_size, h, w, C)
     
     # Permute to bring the height and width back together: (B, 7, H//7, 7, W//7, C)
     patches = patches.permute(0, 1, 3, 2, 4, 5).contiguous()
     
     # Finally, reshape back to the original image shape: (B, H, W, C)
-    images = patches.view(B, 7 * h, 7 * w, C)
+    images = patches.view(B, grid_size * h, grid_size * w, C)
     
     return images
 

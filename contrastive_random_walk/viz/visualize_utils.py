@@ -4,12 +4,12 @@ import torch
 from sklearn.decomposition import PCA
 
 
-def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2):
+def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_size=7):
     # image_1 and image_2 are the original images
     # image_1 dimenisons: (H, W, C)
     # embeddings dimensions: N x D (N is H*W; D is the embedding dimension)
 
-    image_1, image_2 = cv2.resize(image_1, (400, 400)), cv2.resize(image_2, (400, 400))
+    image_1, image_2 = cv2.resize(image_1, (grid_size, grid_size)), cv2.resize(image_2, (grid_size, grid_size))
 
     # crossCheck=True will return only the best matches if keypoints in both images are best matches of each other
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
@@ -17,7 +17,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2):
     # height is 20 pixels per row
     print("Embeddings shape and image shape, grid shape, grid")
     print(embeddings_image_1.shape, image_1.shape)
-    height = int(embeddings_image_1.shape[-1] ** 0.5)
+    height = int(embeddings_image_1.shape[-2] ** 0.5)
 
     matches = bf.match(
         embeddings_image_1.cpu().detach().numpy(),
@@ -36,7 +36,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2):
     grid = grid.view(2, -1)
     grid = grid * scale + scale // 2
 
-    # Extracts keypoints that lie on a 20 x 20 grid
+    # Extracts keypoints that lie on a grid_size x grid_size grid
     print(grid.shape)
     print(grid)
     kps = [cv2.KeyPoint(grid[0][i], grid[1][i], 1) for i in range(grid.shape[-1])]
