@@ -235,6 +235,20 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
         video = torch.nn.functional.interpolate(video, size=(448, 448))
 
+
+        new_video = []
+        patch_size = 64
+        start_x = 0
+        start_y = 0
+        i = 0
+        for batch_idx in range(video.shape[0]):
+            for i in range(448, patch_size):
+                for j in range(448, patch_size):
+                    patch = video[batch_idx, :, i : i + patch_size, j : j + patch_size]
+                    new_video.append(patch)
+        
+        video = torch.stack(tuple(new_video))
+
         # rearrange the dimensions back to the original format
         video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
 
