@@ -43,37 +43,12 @@ train_dataset = KineticsCustom(
     tranformations_frame=tranformations_frame,
 )
 
-# val_dataset = KineticsCustom(
-#     root="data/kinetics400",
-#     split="val",
-#     frames_per_clip=5,
-#     step_between_clips=1,
-#     frame_rate=None,
-#     extensions=("mp4",),
-#     num_classes=400,
-#     transform_video=transforms_video,
-#     tranformations_frame=tranformations_frame,
-# )
-
-# test_dataset = KineticsCustom(
-#     root="data/kinetics400",
-#     split="test",
-#     frames_per_clip=5,
-#     step_between_clips=1,
-#     frame_rate=None,
-#     extensions=("mp4",),
-#     num_classes=400,
-#     transform_video=None,
-#     tranformations_frame=tranformations_frame,
-# )
 
 train_dataloader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=8, shuffle=True
+    train_dataset, batch_size=4, shuffle=True
 )
-val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=8, shuffle=False)
-# test_dataloader = torch.utils.data.DataLoader(
-#     test_dataset, batch_size=16, shuffle=False
-# )
+val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=False)
+
 
 # Each element in the dataset is a tensor of size (2*T, NxN, H, W, C), where:
 # T: clip length
@@ -102,8 +77,10 @@ model = ContrastiveRandomWalkLightningWrapper(
     visualizer=visualizer,
 ).to(device)
 
+print("Trainer Initialization")
 # Initialize the trainer
 trainer = L.Trainer(max_epochs=5)
 
+print("Starting Training")
 # Train the model
 trainer.fit(model, train_dataloader, val_dataloader)

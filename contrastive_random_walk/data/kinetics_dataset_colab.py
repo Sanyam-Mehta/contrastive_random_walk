@@ -46,7 +46,10 @@ class KineticsCustom():
 
     def __getitem__(self, idx):
         # Get the video from the index
+        print("Getting video from index")
         video = self.get_video_from_index(idx)
+        print("Got video from index")
+        print("Video Shape: ", video.shape)
         # video shape: (T, H, W, C) and channels dimension is last
 
         # Transform each frame as follows:
@@ -61,6 +64,7 @@ class KineticsCustom():
         # C is the number of channels in the input tensor (3)
 
         # Actual code begins here:
+        print("Starting patch extraction")
         video_patches = []
         for i in range(video.shape[0]):
             # img shape is (H, W, C). It is a tensor of shape (64, 64, 3)
@@ -71,6 +75,8 @@ class KineticsCustom():
             )
             video_patches.append(modified_patches)
 
+       
+        print("Patch extraction done")
         # # transform the list into a palindrome:
         if self.return_palindrome:
             video_patches = make_palindrome(video_patches)

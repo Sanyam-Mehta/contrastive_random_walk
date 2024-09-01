@@ -126,7 +126,9 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
     def training_step(self, batch, batch_idx):
         video_patches, video = batch[0], batch[1]
 
+        print("Encoding Video")
         encoded_video = self.model(video_patches)
+        print("Video encoding is done")
 
         # enoded_video shape: (B, T, N, D)
 
@@ -150,11 +152,13 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         ) = get_affinity_matrices_all_walks(
             encoded_video, self.temperature, self.edge_dropout_rate
         )
+        print("We have affinity matrices")
 
         # Compute loss here
         loss_all_walks = []
 
         # TODO: Loss could be weighted by the length of the walk.
+        print("Computing loss")
         for (
             walk_len,
             global_affinity_matrix,
@@ -162,6 +166,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             loss_all_walks.append(
                 self.contrastive_random_walk_loss(global_affinity_matrix)
             )
+        print("Loss computed")
 
         # Take the mean of the losses
         loss = torch.mean(torch.stack(loss_all_walks))
