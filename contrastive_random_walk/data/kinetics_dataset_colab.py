@@ -40,6 +40,7 @@ class KineticsCustom():
             frame_rate,
             _precomputed_metadata,
         )
+        self.transform_video = transform_video
         self.tranformations_frame = tranformations_frame
         self.return_palindrome = return_palindrome
 
@@ -96,6 +97,8 @@ class KineticsCustom():
 
     def get_video_from_index(self, idx):
         video, _, _, _ = self.video_clips.get_clip(idx)
+
+        video = self.transform_video(video)
 
         # video shape: (T, H, W, C) and channels dimension is last
         assert video.shape[3] == 3, "Video should have 3 channels"

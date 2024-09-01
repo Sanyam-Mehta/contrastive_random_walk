@@ -149,9 +149,9 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
         walk_front = torch.prod(edge_dropped_local_affinity_matrices[:, :walk_len], dim=1)
 
         # walk_back contains the product of the local affinity matrices from frame at idx walk_len-2 to frame at idx 0
-        walk_back = torch.prod(edge_dropped_local_affinity_matrices[:, walk_len-1].flip(), dim=1)
+        walk_back = torch.prod(torch.flip(edge_dropped_local_affinity_matrices[:, :walk_len], dims=[1]), dim=1)
 
-        walk_palindrome = torch.prod(walk_front, walk_back)
+        walk_palindrome =  walk_palindrome = torch.einsum('bij,bjk->bik', walk_front, walk_back)
 
         # walk_palindrome shape: (B, N, N)
         assert walk_palindrome.shape == (input.size(0), input.size(2), input.size(2))

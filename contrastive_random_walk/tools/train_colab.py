@@ -12,7 +12,7 @@ print(f"Device: {device}")
 
 transforms_video = T.Compose(
     [
-        T.ToPILImage(),
+        # T.ToPILImage(),
         T.Resize(256),
         T.ColorJitter(),
         T.ToTensor(),
@@ -68,9 +68,9 @@ train_dataset = KineticsCustom(
 # )
 
 train_dataloader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=64, shuffle=True
+    train_dataset, batch_size=8, shuffle=True
 )
-val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=False)
+val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=8, shuffle=False)
 # test_dataloader = torch.utils.data.DataLoader(
 #     test_dataset, batch_size=16, shuffle=False
 # )
@@ -91,6 +91,7 @@ visualizer = Visualizer(
     freq=1,  # every 100 epochs
 )
 
+print("Model Initialization")
 # Initialize the model
 model = ContrastiveRandomWalkLightningWrapper(
     resnet_type="resnet18",
