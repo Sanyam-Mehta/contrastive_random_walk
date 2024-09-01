@@ -124,7 +124,10 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         self.visualizer = visualizer
 
     def training_step(self, batch, batch_idx):
+        print("*************Printing Batch Size*******************")
+        print(len(batch))
         video_patches, video = batch[0], batch[1]
+        print(video_patches.shape, video.shape)
 
         print("Encoding Video")
         encoded_video = self.model(video_patches)

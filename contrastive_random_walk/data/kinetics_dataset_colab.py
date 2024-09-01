@@ -9,7 +9,15 @@ from torchvision.datasets.kinetics import Kinetics
 from torchvision.datasets.utils import list_dir
 
 from torchvision.datasets.video_utils import VideoClips
+from torchvision import transforms as T
 
+tranformations_final = T.Compose(
+    [
+        T.ToPILImage(),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]
+)
 
 class KineticsCustom():
     def __init__(
@@ -81,7 +89,7 @@ class KineticsCustom():
                 transforms=self.tranformations_frame,
             )
             video_patches.append(modified_patches)
-            new_video.append(img)
+            new_video.append(tranformations_final(img.permute(2, 0, 1)).permute(1, 2, 0))
 
        
         print("Patch extraction done")
@@ -106,7 +114,7 @@ class KineticsCustom():
         print("Shape of video: ", video.shape)
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
-        return video_patches, new_video
+        return video_patches, video
 
     def __len__(self) -> int:
       return self.video_clips.num_clips()
