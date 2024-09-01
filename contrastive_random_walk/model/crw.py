@@ -232,7 +232,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         
         B, T, _, _, _, _ = video.shape
         # rearrange the dimensions to match the expected input format i.e. (B*T, C, H, W)
-        video = einops.rearrange(video, "B T N H W C -> (B T) C H W")
+        video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
         video = torch.nn.functional.interpolate(video, size=(448, 448))
 
         # rearrange the dimensions back to the original format
