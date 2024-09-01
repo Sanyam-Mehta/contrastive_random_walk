@@ -15,6 +15,8 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2):
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
     # height is 20 pixels per row
+    print("Embeddings shape, grid shape, grid")
+    print(embeddings_image_1.shape)
     height = int(embeddings_image_1.shape[-1] ** 0.5)
 
     matches = bf.match(
@@ -35,6 +37,8 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2):
     grid = grid * scale + scale // 2
 
     # Extracts keypoints that lie on a 20 x 20 grid
+    print(grid.shape)
+    print(grid)
     kps = [cv2.KeyPoint(grid[0][i], grid[1][i], 1) for i in range(grid.shape[-1])]
 
     # Sort the matches based on distance
