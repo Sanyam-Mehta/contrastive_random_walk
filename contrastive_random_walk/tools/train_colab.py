@@ -1,4 +1,5 @@
 import lightning as L
+from lightning.pytorch.callbacks import ModelCheckpoint
 import torch
 from contrastive_random_walk.data.kinetics_dataset_colab import KineticsCustom
 from contrastive_random_walk.model.crw import ContrastiveRandomWalkLightningWrapper
@@ -40,11 +41,26 @@ train_dataset = KineticsCustom(
     tranformations_frame=tranformations_frame,
 )
 
+checkpoint_callback = ModelCheckpoint(
+    dirpath='/content/drive/MyDrive/data/checkpoints/', 
+    filename='{epoch}-{val_loss:.2f}-{other_metric:.2f}',
+    monitor='val_loss',
+    mode='min',
+    save_top_k=3,
+    save_last=True,
+    verbose=True,
+    every_n_train_steps=100,
+    every_n_epochs=1,
+    auto_insert_metric_name=True
+ )
 
 train_dataloader = torch.utils.data.DataLoader(
     train_dataset, batch_size=4, shuffle=True
 )
-val_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=False)
+val_dataloader = torch.utils.data.DataLoader(
+    train_dataset, 
+    batch_size=4, shuffle=False
+    )
 
 
 # Each element in the dataset is a tensor of size (2*T, NxN, H, W, C), where:
@@ -76,7 +92,7 @@ model = ContrastiveRandomWalkLightningWrapper(
 
 print("Trainer Initialization")
 # Initialize the trainer
-trainer = L.Trainer(max_epochs=5)
+trainer = L.Trainer(max_epochs=5, callbacks=[checkpoint_callback])
 
 print("Starting Training")
 # Train the model
