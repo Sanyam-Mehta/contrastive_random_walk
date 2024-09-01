@@ -5,6 +5,7 @@ import lightning as L
 import numpy as np
 import torch
 import torch.nn as nn
+import einops
 
 from contrastive_random_walk.model.encoders import VideoEncoder
 from contrastive_random_walk.model.similarity import get_affinity_matrices_all_walks
@@ -225,6 +226,18 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
     def get_visuals(self, video, step):
 
         # Video is the original, unpatched video
+        # Interpolate the video from 256x256 to 448x448. Input size: (B, T, 1, H, W, C)
+        # From the documentation, the interpolate function says that:
+        # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
+        
+        B, T, _, _, _, _ = video.shape
+        # rearrange the dimensions to match the expected input format i.e. (B*T, C, H, W)
+        video = einops.rearrange(video, "B T N H W C -> (B T) C H W")
+        video = torch.nn.functional.interpolate(video, size=(448, 448))
+
+        # rearrange the dimensions back to the original format
+        video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
+
         # Dimensions: B, T, 1, H, W, C (H==W)
         assert video.shape[2] == 1, "Video should have only one patch"
         assert video.shape[3] == video.shape[4], "Height and width should be equal"
