@@ -15,8 +15,8 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2):
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
     # height is 20 pixels per row
-    print("Embeddings shape, grid shape, grid")
-    print(embeddings_image_1.shape)
+    print("Embeddings shape and image shape, grid shape, grid")
+    print(embeddings_image_1.shape, image_1.shape)
     height = int(embeddings_image_1.shape[-1] ** 0.5)
 
     matches = bf.match(
