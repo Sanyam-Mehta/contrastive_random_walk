@@ -38,6 +38,51 @@ def patchify_image(image, patch_size):
     return np.array(patches)
 
 
+import torch
+
+def divide_image_into_patches(images):
+    """
+        # Example usage
+        B, H, W, C = 16, 448, 448, 3
+        images = torch.randn(B, H, W, C)
+        patches = divide_image_into_patches(images)
+        print(patches.shape)  # Should output: torch.Size([16, 49, 64, 64, 3])
+    """
+
+    # images: Tensor of shape (B, H, W, C)
+    B, H, W, C = images.shape
+    assert H == W == 448, "Height and Width must be 448."
+    
+    # Reshape and permute to get patches of shape (B, 49, H/7, W/7, C)
+    patches = images.view(B, 7, H // 7, 7, W // 7, C)
+    patches = patches.permute(0, 1, 3, 2, 4, 5).contiguous()
+    patches = patches.view(B, 49, H // 7, W // 7, C)
+    
+    return patches
+
+def combine_patches_into_image(patches):
+    """
+        # Example usage
+        patches = torch.randn(16, 49, 64, 64, 3)
+        images = combine_patches_into_image(patches)
+        print(images.shape)  # Should output: torch.Size([16, 448, 448, 3])
+    """
+    # patches: Tensor of shape (B, 49, H//7, W//7, C)
+    B, num_patches, h, w, C = patches.shape
+    assert num_patches == 49, "Number of patches must be 49."
+    
+    # Reshape the tensor to (B, 7, 7, H//7, W//7, C)
+    patches = patches.view(B, 7, 7, h, w, C)
+    
+    # Permute to bring the height and width back together: (B, 7, H//7, 7, W//7, C)
+    patches = patches.permute(0, 1, 3, 2, 4, 5).contiguous()
+    
+    # Finally, reshape back to the original image shape: (B, H, W, C)
+    images = patches.view(B, 7 * h, 7 * w, C)
+    
+    return images
+
+
 def make_palindrome(lst):
     """
     Converts a list into a palindrome by appending the reverse of the list to itself.

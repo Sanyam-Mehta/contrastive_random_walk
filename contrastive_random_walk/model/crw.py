@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import einops
+from utils import combine_patches_into_image, divide_image_into_patches
 
 from contrastive_random_walk.model.encoders import VideoEncoder
 from contrastive_random_walk.model.similarity import get_affinity_matrices_all_walks
@@ -235,49 +236,25 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
         video = torch.nn.functional.interpolate(video, size=(448, 448))
 
-        new_image_size = 448
-        new_image = (
-            np.zeros((3, new_image_size, new_image_size))
+        patchified_video = divide_image_into_patches(
+            einops.rearrange(video, "(B T) C H W -> (B T) H W C", B=B, T=T)
         )
 
-        stride = 64
-        patch_size = 64
-        for batch_idx, batch in enumerate(video):
-            image = batch.cpu().numpy()
-            image_patches = []
-            for i in range(7):
-                for j in range(7):
-                    x_start = i * stride
-                    y_start = j * stride
-                    patch = image[
-                        :, x_start : x_start + patch_size, y_start : y_start + patch_size
-                    ]
+        patchified_video = einops.rearrange(
+            patchified_video, "(B T) N H W C -> B T N H W C", B=B, T=T
+        )
 
-                    new_x_start = i * patch_size
-                    new_y_start = j * patch_size
+        print("Interpolated video shape after patchifications: ", patchified_video.shape, video.shape)
 
-                    new_image[
-                        :,
-                        new_x_start : new_x_start + patch_size,
-                        new_y_start : new_y_start + patch_size,
-                    ] = patch
-
-                    image_patches.append(patch)
-
-            image_patches = np.stack(image_patches)
-            image_patches = torch.tensor(image_patches)
-            video[batch_idx] = image_patches
-
-        print("Interpolated video shape after patchifications: ", video.shape)
-        # rearrange the dimensions back to the original format
+        # # rearrange the dimensions back to the original format
         video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
 
         # Dimensions: B, T, 1, H, W, C (H==W)
-        assert video.shape[2] == 1, "Video should have only one patch"
-        assert video.shape[3] == video.shape[4], "Height and width should be equal"
+        # assert video.shape[2] == 1, "Video should have only one patch"
+        # assert video.shape[3] == video.shape[4], "Height and width should be equal"
 
         # Encode the video using the video encoder
-        encoded_video = self.model(video)
+        encoded_video = self.model(patchified_video)
         # encoded_video shape: (B, T, N, D)
 
         # randomly select two frames from batch 0
