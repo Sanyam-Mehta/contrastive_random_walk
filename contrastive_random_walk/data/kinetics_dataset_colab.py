@@ -104,7 +104,13 @@ class KineticsCustom():
     def get_video_from_index(self, idx):
         video, _, _, _ = self.video_clips.get_clip(idx)
 
-        video = self.transform_video(video)
+        # Inside Video Transform
+        # video = self.transform_video(video)
+
+        # Transform the vide frame by frame
+        print("Transforming video frame by frame")
+        for i in range(video.shape[0]):
+            video[i] = self.transform_video(video[i])
 
         # video shape: (T, H, W, C) and channels dimension is last
         assert video.shape[3] == 3, "Video should have 3 channels"
