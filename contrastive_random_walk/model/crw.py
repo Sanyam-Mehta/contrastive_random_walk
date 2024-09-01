@@ -230,25 +230,45 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # From the documentation, the interpolate function says that:
         # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
         
-        B, T, _, _, _, _ = video.shape
+        B, T, N, H, W, C = video.shape
         # rearrange the dimensions to match the expected input format i.e. (B*T, C, H, W)
         video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
         video = torch.nn.functional.interpolate(video, size=(448, 448))
 
+        new_image_size = 448
+        new_image = (
+            np.zeros((3, new_image_size, new_image_size))
+        )
 
-        new_video = []
+        stride = 64
         patch_size = 64
-        start_x = 0
-        start_y = 0
-        i = 0
-        for batch_idx in range(video.shape[0]):
-            for i in range(448, patch_size):
-                for j in range(448, patch_size):
-                    patch = video[batch_idx, :, i : i + patch_size, j : j + patch_size]
-                    new_video.append(patch)
-        
-        video = torch.stack(tuple(new_video))
+        for batch_idx, batch in enumerate(video):
+            image = batch.cpu().numpy()
+            image_patches = []
+            for i in range(7):
+                for j in range(7):
+                    x_start = i * stride
+                    y_start = j * stride
+                    patch = image[
+                        :, x_start : x_start + patch_size, y_start : y_start + patch_size
+                    ]
 
+                    new_x_start = i * patch_size
+                    new_y_start = j * patch_size
+
+                    new_image[
+                        :,
+                        new_x_start : new_x_start + patch_size,
+                        new_y_start : new_y_start + patch_size,
+                    ] = patch
+
+                    image_patches.append(patch)
+
+            image_patches = np.stack(image_patches)
+            image_patches = torch.tensor(image_patches)
+            video[batch_idx] = image_patches
+
+        print("Interpolated video shape after patchifications: ", video.shape)
         # rearrange the dimensions back to the original format
         video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
 
