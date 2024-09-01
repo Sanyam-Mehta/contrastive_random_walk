@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import einops
-from utils import combine_patches_into_image, divide_image_into_patches
+from contrastive_random_walk.utils import combine_patches_into_image, divide_image_into_patches
 
 from contrastive_random_walk.model.encoders import VideoEncoder
 from contrastive_random_walk.model.similarity import get_affinity_matrices_all_walks
