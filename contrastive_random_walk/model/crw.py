@@ -311,8 +311,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
         ordered_dict = OrderedDict(
             [
-                (f"frame_1_idx_{t1}_step_{step}", image_1),
-                (f"frame_2_idx_{t2}_step_{step}", image_2),
+                (f"frame_1_idx_{t1}_step_{step}", image_1 / 255.),
+                (f"frame_2_idx_{t2}_step_{step}", image_2 / 255.),
                 (f"drawn_matches_{t1}_{t2}_step_{step}", drawn_matches / 255.),
                 # ("pca_output", pca_output),
             ]

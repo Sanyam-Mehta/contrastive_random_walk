@@ -50,9 +50,9 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     print("CV2 Drawing")
     # img1 = img2 = np.zeros((40, 40, 3))
     out = cv2.drawMatches(
-        (image_1 * 255.).astype(np.uint8) ,
+        (image_1).astype(np.uint8) ,
         kps,
-        (image_2 * 255.).astype(np.uint8),
+        (image_2).astype(np.uint8),
         kps,
         matches[:],
         None,
