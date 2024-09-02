@@ -103,9 +103,8 @@ model = ContrastiveRandomWalkLightningWrapper(
 print("Trainer Initialization")
 # Initialize the trainer
 trainer = L.Trainer(
-    resume_from_checkpoint="/content/drive/MyDrive/data/checkpoints/last.ckpt",
     max_epochs=10, callbacks=[checkpoint_callback])
 
 print("Starting Training")
 # Train the model
-trainer.fit(model, train_dataloader, val_dataloader)
+trainer.fit(model, train_dataloader, val_dataloader, ckpt_path="/content/drive/MyDrive/data/checkpoints/last.ckpt")
