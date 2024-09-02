@@ -50,7 +50,6 @@ checkpoint_callback = ModelCheckpoint(
     save_last=True,
     verbose=True,
     every_n_train_steps=100,
-    every_n_epochs=1,
     auto_insert_metric_name=True
  )
 
