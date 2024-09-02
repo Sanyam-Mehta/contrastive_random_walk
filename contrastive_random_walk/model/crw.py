@@ -119,8 +119,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         learning_rate=1e-3,
         palindromic_dataset=False,
         visualizer=None,
-        train_viz_freq=10,
-        val_viz_freq=10,
+        train_viz_freq=1000,
+        val_viz_freq=1000,
     ):
         super(ContrastiveRandomWalkLightningWrapper, self).__init__()
         self.model = ContrastiveRandomWalk(
@@ -133,6 +133,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         self.contrastive_random_walk_loss = ContrastiveRandomWalkLoss()
         self.learning_rate = learning_rate
         self.palindromic_dataset = palindromic_dataset
+        # At every train_viz_freq steps, visualize the video
         self.train_viz_freq = train_viz_freq
         self.val_viz_freq = val_viz_freq
         self.visualizer = visualizer
@@ -194,12 +195,12 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             self.current_epoch
         )
 
-        if self.current_epoch % self.train_viz_freq == 0:
+        if self.global_step % self.train_viz_freq == 0:
             # Visualize the video
             #print("Visualizing the video")
-            visuals = self.get_visuals(video, dataset_idx, self.trainer.train_dataloader.dataset, self.current_epoch)
+            visuals = self.get_visuals(video, dataset_idx, self.trainer.train_dataloader.dataset, self.global_step)
             #print("Displaying the results")
-            self.visualizer.display_current_results(visuals, self.current_epoch)
+            self.visualizer.display_current_results(visuals, self.global_step)
 
         self.log("train_loss", loss.item())
 
