@@ -9,7 +9,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     # image_1 dimenisons: (H, W, C)
     # embeddings dimensions: N x D (N is H*W; D is the embedding dimension)
 
-    image_1, image_2 = cv2.resize(image_1, (grid_size, grid_size)), cv2.resize(image_2, (grid_size, grid_size))
+    image_1, image_2 = cv2.resize(image_1, (grid_size*grid_size, grid_size*grid_size)), cv2.resize(image_2, (grid_size*grid_size, grid_size*grid_size))
 
     # crossCheck=True will return only the best matches if keypoints in both images are best matches of each other
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
