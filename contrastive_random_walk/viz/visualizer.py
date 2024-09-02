@@ -30,7 +30,9 @@ class Visualizer:
         self.name = name
         self.freq = freq
         self.output_dir = "data/checkpoint"
-        self.viz_name = "exp2"
+        self.train_loss_txt = "train_loss.txt"
+        self.val_loss_txt = "val_loss.txt"
+        self.viz_name = "exp3"
         
         if self.tf_log:
 
@@ -53,6 +55,15 @@ class Visualizer:
         if self.tf_log:
             for name, loss in losses.items():
                 self.tf.summary.scalar(name, loss, step=step)
+
+                if name == "train_loss":
+                    with open(self.log_dir + "/"  + self.train_loss_txt, "a") as f:
+                        f.write(str(loss) + "\n")
+
+                if name == "val_loss":
+                    with open(self.log_dir + "/" + self.val_loss_txt, "a") as f:
+                        f.write(str(loss) + "\n")
+                
 
     # |visuals|: dictionary of images to display or save
     def display_current_results(self, visuals, step):
