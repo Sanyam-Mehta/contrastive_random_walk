@@ -233,7 +233,10 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # From the documentation, the interpolate function says that:
         # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
         
+        # Taking the first element of the dataset_idx tensor
+        dataset_idx = dataset_idx.item()[0]
         print("dataset_idx: ", dataset_idx)
+
         original_video = dataset.get_video_from_index(dataset_idx)
 
         B, T, N, H, W, C = video.shape
@@ -273,8 +276,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         frame2_descriptors = encoded_video[0, t2]
 
         # extract tensor for the two frames
-        frame1 = original_video[0, t1]#, 0].squeeze(0)  # shape: (H, W, C)
-        frame2 = original_video[0, t2]#, 0].squeeze(0)  # shape: (H, W, C)
+        frame1 = original_video[t1]#, 0].squeeze(0)  # shape: (H, W, C)
+        frame2 = original_video[t2]#, 0].squeeze(0)  # shape: (H, W, C)
 
         # Convert the tensor to numpy array, cv2 expect channels to be last
         image_1 = frame1.cpu().numpy()
