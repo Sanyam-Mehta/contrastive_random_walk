@@ -286,7 +286,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         video_clip = video[0].squeeze(1)  # shape: (T, H, W, C)
 
         # Apply PCA to the video clip
-        pca_output = pca_feats_top_3K_components(video_clip)
+        # pca_output = pca_feats_top_3K_components(video_clip)
 
         # ############## Display results and errors ############
         # if self.opt.isTrain:
@@ -302,7 +302,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
                 (f"frame_1_idx_{t1}", image_1),
                 (f"frame_2_idx_{t2}", image_2),
                 ("drawn_matches", drawn_matches),
-                ("pca_output", pca_output),
+                # ("pca_output", pca_output),
             ]
         )
         return ordered_dict
