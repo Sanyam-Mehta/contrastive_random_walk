@@ -127,7 +127,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         
-        video_patches, video = batch[0], batch[1]
+        video_patches, video, original_video = batch[0], batch[1], batch[2]
         
 
         # print("Encoding Video")
@@ -177,7 +177,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         if self.current_epoch % self.train_viz_freq == 0:
             # Visualize the video
             print("Visualizing the video")
-            visuals = self.get_visuals(video, self.current_epoch)
+            visuals = self.get_visuals(video, original_video, self.current_epoch)
             print("Displaying the results")
             self.visualizer.display_current_results(visuals, self.current_epoch)
 
@@ -188,7 +188,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        video_patches, video = batch[0], batch[1]
+        video_patches, video, original_video = batch[0], batch[1], batch[2]
 
         encoded_video = self.model(video_patches)
 
@@ -223,7 +223,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
 
-    def get_visuals(self, video, step):
+    def get_visuals(self, video, original_video, step):
 
         # Video is the original, unpatched video
         # Interpolate the video from 256x256 to 448x448. Input size: (B, T, 1, H, W, C)
@@ -267,8 +267,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         frame2_descriptors = encoded_video[0, t2]
 
         # extract tensor for the two frames
-        frame1 = video[0, t1, 0]
-        frame2 = video[0, t2, 0]
+        frame1 = original_video[0, t1, 0]
+        frame2 = original_video[0, t2, 0]
 
         # Convert the tensor to numpy array, cv2 expect channels to be last
         image_1 = frame1.cpu().numpy()
@@ -304,7 +304,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             [
                 (f"frame_1_idx_{t1}", image_1),
                 (f"frame_2_idx_{t2}", image_2),
-                ("drawn_matches", drawn_matches),
+                (f"drawn_matches_{t1}_{t2}", drawn_matches),
                 # ("pca_output", pca_output),
             ]
         )

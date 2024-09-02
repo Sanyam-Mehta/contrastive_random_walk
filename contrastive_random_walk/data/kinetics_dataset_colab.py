@@ -114,9 +114,10 @@ class KineticsCustom():
         # video shape: (T, H, W, C) and channels dimension is last
         video = new_video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
         # print("Shape of video: ", video.shape)
+        original_video = video.unsqueeze(1)
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
-        return video_patches, video
+        return video_patches, video, original_video
 
     def __len__(self) -> int:
       return self.video_clips.num_clips()
