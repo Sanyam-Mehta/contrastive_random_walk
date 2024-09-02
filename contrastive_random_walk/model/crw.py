@@ -178,7 +178,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         if self.current_epoch % self.train_viz_freq == 0:
             # Visualize the video
             print("Visualizing the video")
-            visuals = self.get_visuals(video, dataset_idx, self.train_dataloader().dataset, self.current_epoch)
+            visuals = self.get_visuals(video, dataset_idx, self.trainer.train_dataloader().dataset, self.current_epoch)
             print("Displaying the results")
             self.visualizer.display_current_results(visuals, self.current_epoch)
 
