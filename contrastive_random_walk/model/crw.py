@@ -28,7 +28,7 @@ class ContrastiveRandomWalkLoss(nn.Module):
 
         # loss = 0
 
-        # B, _, _ = global_affinity_matrix.shape
+        # B, N, N = global_affinity_matrix.shape
 
         # for i in range(B):
         #     single_global_affinity_matrix = global_affinity_matrix[i]
@@ -36,19 +36,31 @@ class ContrastiveRandomWalkLoss(nn.Module):
         #     # Take the log of the diagonal elements
         #     log_diag = torch.log(torch.diag(single_global_affinity_matrix))
 
-        #     loss += -torch.sum(log_diag)
+        #     unnormalized_loss =  -torch.sum(log_diag)
+
+        #     normalized_loss = unnormalized_loss / N
+
+        #     loss += normalized_loss
+
+        # loss = loss / B
 
         # return loss
 
         #### Optimized version ####
-        # Extract the diagonal elements for all batches
-        diag_elements = torch.diagonal(global_affinity_matrix, dim1=-2, dim2=-1)
+        # Get the shape of the global affinity matrix
+        B, N, _ = global_affinity_matrix.shape
 
-        # Take the log of the diagonal elements
-        log_diag = torch.log(diag_elements)
+        # Take the log of the diagonal elements for each matrix in the batch
+        log_diag = torch.log(torch.diagonal(global_affinity_matrix, dim1=-2, dim2=-1))
 
-        # Sum the negative log values
-        loss = -torch.sum(log_diag)
+        # Sum the log diagonal elements for each matrix in the batch
+        unnormalized_loss = -torch.sum(log_diag, dim=-1)
+
+        # Normalize the loss by N
+        normalized_loss = unnormalized_loss / N
+
+        # Average the loss over the batch
+        loss = torch.mean(normalized_loss)
 
         return loss
 
