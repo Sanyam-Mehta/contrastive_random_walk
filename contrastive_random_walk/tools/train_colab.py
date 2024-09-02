@@ -55,11 +55,11 @@ checkpoint_callback = ModelCheckpoint(
  )
 
 train_dataloader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=16, shuffle=True
+    train_dataset, batch_size=8, shuffle=True
 )
 val_dataloader = torch.utils.data.DataLoader(
     train_dataset, 
-    batch_size=16, shuffle=False
+    batch_size=8, shuffle=False
 )
 
 
