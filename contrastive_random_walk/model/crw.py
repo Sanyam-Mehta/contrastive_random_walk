@@ -126,16 +126,14 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         self.visualizer = visualizer
 
     def training_step(self, batch, batch_idx):
-        # print("*************Printing Batch Size*******************")
-        # print(len(batch))
+        
         video_patches, video = batch[0], batch[1]
-        # print(video_patches.shape, video.shape)
+        
 
         # print("Encoding Video")
         encoded_video = self.model(video_patches)
-        # print("Video encoding is done")
 
-        # enoded_video shape: (B, T, N, D)
+        # encoded_video shape: (B, T, N, D)
 
         # Compute the global affinity matrix (B x N x N) [i.e. (B, 49, 49)]
         # These have non-learnable similarity function
@@ -176,11 +174,11 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # Take the mean of the losses
         loss = torch.mean(torch.stack(loss_all_walks))
 
-        # if self.current_epoch % self.train_viz_freq == 0:
-        #     # Visualize the video
-        #     print("Visualizing the video")
-        #     visuals = self.get_visuals(video, self.current_epoch)
-        #     self.visualizer.display_current_results(visuals, self.current_epoch)
+        if self.current_epoch % self.train_viz_freq == 0:
+            # Visualize the video
+            print("Visualizing the video")
+            visuals = self.get_visuals(video, self.current_epoch)
+            self.visualizer.display_current_results(visuals, self.current_epoch)
 
         self.log("train_loss", loss)
 

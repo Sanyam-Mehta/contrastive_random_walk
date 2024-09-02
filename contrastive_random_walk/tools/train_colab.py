@@ -60,7 +60,7 @@ train_dataloader = torch.utils.data.DataLoader(
 val_dataloader = torch.utils.data.DataLoader(
     train_dataset, 
     batch_size=4, shuffle=False
-    )
+)
 
 
 # Each element in the dataset is a tensor of size (2*T, NxN, H, W, C), where:

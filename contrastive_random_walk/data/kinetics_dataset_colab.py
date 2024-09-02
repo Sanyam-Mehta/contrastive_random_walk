@@ -75,6 +75,8 @@ class KineticsCustom():
         # print("Starting patch extraction")
         new_video = []
         video_patches = []
+
+        # TODO: Poorly written code. Should be refactored
         for i in range(video.shape[0]):
             # img shape is (H, W, C). It is a tensor of shape (64, 64, 3)
             img = video[i].permute(2, 0, 1)
