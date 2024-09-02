@@ -90,7 +90,8 @@ print("Model Initialization")
 #     visualizer=visualizer,
 # ).to(device)
 # From Allan's Code
-model = ContrastiveRandomWalkLightningWrapper(
+model = ContrastiveRandomWalkLightningWrapper.load_from_checkpoint(
+    "/content/drive/MyDrive/data/checkpoints/last.ckpt",
     resnet_type="resnet18",
     output_dim=128,
     temperature=0.07,
