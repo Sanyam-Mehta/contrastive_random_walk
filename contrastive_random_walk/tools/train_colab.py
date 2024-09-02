@@ -90,7 +90,7 @@ print("Model Initialization")
 #     visualizer=visualizer,
 # ).to(device)
 # From Allan's Code
-model = ContrastiveRandomWalkLightningWrapper.load_from_checkpoint(
+model = ContrastiveRandomWalkLightningWrapper(
     resnet_type="resnet18",
     output_dim=128,
     temperature=0.07,
