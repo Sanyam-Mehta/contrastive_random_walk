@@ -304,7 +304,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             [
                 (f"frame_1_idx_{t1}", image_1),
                 (f"frame_2_idx_{t2}", image_2),
-                (f"drawn_matches_{t1}_{t2}", drawn_matches),
+                (f"drawn_matches_{t1}_{t2}", drawn_matches / 255.),
                 # ("pca_output", pca_output),
             ]
         )

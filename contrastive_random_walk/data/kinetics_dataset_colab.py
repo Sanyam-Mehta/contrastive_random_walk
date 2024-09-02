@@ -60,6 +60,10 @@ class KineticsCustom():
         # print("Video Shape: ", video.shape)
         # video shape: (T, H, W, C) and channels dimension is last
 
+
+        # print("Shape of video: ", video.shape)
+        original_video = video.unsqueeze(1)
+
         # Transform each frame as follows:
         # 1. Convert the frame to a 256*256 image
         # 2. Convert each frame to a 7*7 grid of 64*64 patches using extract_patches_with_jitter function
@@ -113,8 +117,6 @@ class KineticsCustom():
 
         # video shape: (T, H, W, C) and channels dimension is last
         video = new_video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
-        # print("Shape of video: ", video.shape)
-        original_video = video.unsqueeze(1)
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
         return video_patches, video, original_video
