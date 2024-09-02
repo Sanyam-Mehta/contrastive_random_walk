@@ -30,7 +30,7 @@ class Visualizer:
         self.name = name
         self.freq = freq
         self.output_dir = "data/checkpoint"
-        self.viz_name = "exp1"
+        self.viz_name = "exp2"
         
         if self.tf_log:
 
