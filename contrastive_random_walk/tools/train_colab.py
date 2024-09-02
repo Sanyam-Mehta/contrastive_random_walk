@@ -43,15 +43,10 @@ train_dataset = KineticsCustom(
 )
 
 checkpoint_callback = ModelCheckpoint(
-    dirpath='/content/drive/MyDrive/data/checkpoints_new/', 
-    filename='{epoch}-{val_loss:.2f}-{other_metric:.2f}',
-    monitor='val_loss',
-    mode='min',
-    save_top_k=3,
+    dirpath='/content/drive/MyDrive/data/checkpoints_rerun/', 
     save_last=True,
     verbose=True,
     every_n_train_steps=50,
-    auto_insert_metric_name=True
  )
 
 train_dataloader = torch.utils.data.DataLoader(
@@ -107,4 +102,4 @@ trainer = L.Trainer(
 
 print("Starting Training")
 # Train the model
-trainer.fit(model, train_dataloader, val_dataloader, ckpt_path="/content/drive/MyDrive/data/checkpoints/last.ckpt")
+trainer.fit(model, train_dataloader, val_dataloader)
