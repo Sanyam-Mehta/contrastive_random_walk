@@ -104,7 +104,7 @@ class VideoEncoder(nn.Module):
         # W: width of each patch
         # C: number of channels in the input tensor
 
-        print("Video shape inside encoder: ", video.shape)
+        #print("Video shape inside encoder: ", video.shape)
 
         B, T, N, H, W, C = video.shape
 

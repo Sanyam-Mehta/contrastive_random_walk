@@ -144,7 +144,7 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
     # Walk T: 0-1-2-3-...-T-...-3-2-1-0
 
     global_affinity_matrix_all_walks_dict = dict()
-    print("Going inside affinity matrices multiplcation loop")
+    #print("Going inside affinity matrices multiplcation loop")
     for walk_len in range(2, input.size(1)+1):
         # walk_front contains the product of the local affinity matrices from frame at idx 0 to frame at idx walk_len-1
         walk_front = torch.prod(edge_dropped_local_affinity_matrices[:, :walk_len], dim=1)
@@ -160,5 +160,5 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
 
         global_affinity_matrix_all_walks_dict[walk_len] = walk_palindrome
 
-    print("Multiplcation loop done")
+    #("Multiplcation loop done")
     return global_affinity_matrix_all_walks_dict, local_affinity_matrices, edge_dropped_local_affinity_matrices

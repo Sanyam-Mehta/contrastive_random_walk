@@ -177,9 +177,9 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
         if self.current_epoch % self.train_viz_freq == 0:
             # Visualize the video
-            print("Visualizing the video")
+            #print("Visualizing the video")
             visuals = self.get_visuals(video, dataset_idx, self.trainer.train_dataloader.dataset, self.current_epoch)
-            print("Displaying the results")
+            #print("Displaying the results")
             self.visualizer.display_current_results(visuals, self.current_epoch)
 
         self.log("train_loss", loss)
@@ -235,7 +235,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         
         # Taking the first element of the dataset_idx tensor
         dataset_idx = dataset_idx[0].item()
-        print("dataset_idx: ", dataset_idx)
+        #print("dataset_idx: ", dataset_idx)
 
         original_video = dataset.get_video_from_index(dataset_idx)
 
@@ -255,7 +255,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             patchified_video, "(B T) N H W C -> B T N H W C", B=B, T=T
         )
 
-        print("Interpolated video shape after patchifications: ", patchified_video.shape, video.shape)
+        #print("Interpolated video shape after patchifications: ", patchified_video.shape, video.shape)
 
         # # rearrange the dimensions back to the original format
         video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
@@ -307,8 +307,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         #     self.averageloss = []
 
         # Label, Image
-        print("Creating ordered dict (channel last)")
-        print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
+        #print("Creating ordered dict (channel last)")
+        #print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
         ordered_dict = OrderedDict(
             [
                 (f"frame_1_idx_{t1}_step_{step}", image_1 / 255.),

@@ -8,8 +8,8 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     # image_1 and image_2 are the original images
     # image_1 dimenisons: (H, W, C)
     # embeddings dimensions: N x D (N is H*W; D is the embedding dimension)
-    print("Embeddings shape and image shape, grid shape, grid")
-    print(embeddings_image_1.shape, image_1.shape)
+    #print("Embeddings shape and image shape, grid shape, grid")
+    #print(embeddings_image_1.shape, image_1.shape)
 
     image_1, image_2 = cv2.resize(image_1, (grid_size*grid_size, grid_size*grid_size)), cv2.resize(image_2, (grid_size*grid_size, grid_size*grid_size))
 
@@ -17,8 +17,8 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
     # height is 20 pixels per row
-    print("Embeddings shape and image shape, grid shape, grid")
-    print(embeddings_image_1.shape, image_1.shape)
+    #print("Embeddings shape and image shape, grid shape, grid")
+    #print(embeddings_image_1.shape, image_1.shape)
     height = int(embeddings_image_1.shape[-2] ** 0.5)
 
     matches = bf.match(
@@ -39,15 +39,15 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     grid = grid * scale + scale // 2
 
     # Extracts keypoints that lie on a grid_size x grid_size grid
-    print(grid.shape)
-    print(grid)
+    #print(grid.shape)
+    #print(grid)
     kps = [cv2.KeyPoint(int(grid[0][i]), int(grid[1][i]), 1) for i in range(grid.shape[-1])]
 
     # Sort the matches based on distance
-    print("Sorting matches")
+    #print("Sorting matches")
     matches = sorted(matches, key=lambda x: x.distance)
 
-    print("CV2 Drawing")
+    #print("CV2 Drawing")
     # img1 = img2 = np.zeros((40, 40, 3))
     out = cv2.drawMatches(
         (image_1).astype(np.uint8) ,
@@ -59,7 +59,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
         flags=2,
     )
 
-    print("CV2 Drawn")
+    #print("CV2 Drawn")
 
     return out
 
