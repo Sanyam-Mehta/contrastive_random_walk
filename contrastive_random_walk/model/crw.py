@@ -298,7 +298,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         #     self.averageloss = []
 
         # Label, Image
-        print("Creating ordered dict")
+        print("Creating ordered dict (channel last)")
         print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
         ordered_dict = OrderedDict(
             [

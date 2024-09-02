@@ -98,6 +98,7 @@ class Visualizer:
         if self.use_html:  # save images to a html file
             print("Saving images to HTML")
             for label, image_numpy in visuals.items():
+                print("Label: ", label, "numpy shape: ", image_numpy.shape)
                 if isinstance(image_numpy, list):
                     for i in range(len(image_numpy)):
                         img_path = os.path.join(

@@ -55,7 +55,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
         matches[:],
         None,
         flags=2,
-    ).transpose(2, 0, 1)
+    )
 
     print("CV2 Drawn")
 
