@@ -62,7 +62,7 @@ class KineticsCustom():
 
 
         # print("Shape of video: ", video.shape)
-        original_video = video.unsqueeze(1)
+        # original_video = video.unsqueeze(1)
 
         # Transform each frame as follows:
         # 1. Convert the frame to a 256*256 image
@@ -119,7 +119,11 @@ class KineticsCustom():
         video = new_video.unsqueeze(1)  # T, NxN, H, W, C where N == 1
 
         # video_patches has dimensions (2*clip_len/clip_len, 49, 64, 64, 3) [2*T, NxN, H, W, C]
-        return video_patches, video, original_video
+        return {
+            "video_patches": video_patches,
+            "video": video,
+            "dataset_idx": idx
+        }
 
     def __len__(self) -> int:
       return self.video_clips.num_clips()

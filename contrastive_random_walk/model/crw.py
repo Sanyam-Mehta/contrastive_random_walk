@@ -127,8 +127,9 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         
-        video_patches, video, original_video = batch[0], batch[1], batch[2]
-        
+        video_patches = batch["video_patches"]
+        video = batch["video"]
+        dataset_idx = batch["dataset_idx"]
 
         # print("Encoding Video")
         encoded_video = self.model(video_patches)
@@ -177,7 +178,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         if self.current_epoch % self.train_viz_freq == 0:
             # Visualize the video
             print("Visualizing the video")
-            visuals = self.get_visuals(video, original_video, self.current_epoch)
+            visuals = self.get_visuals(video, dataset_idx, self.train_dataloader().dataset, self.current_epoch)
             print("Displaying the results")
             self.visualizer.display_current_results(visuals, self.current_epoch)
 
@@ -188,8 +189,10 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        video_patches, video, original_video = batch[0], batch[1], batch[2]
-
+        video_patches = batch["video_patches"]
+        video = batch["video"]
+        dataset_idx = batch["dataset_idx"]
+        
         encoded_video = self.model(video_patches)
 
         (
@@ -223,13 +226,15 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
 
-    def get_visuals(self, video, original_video, step):
+    def get_visuals(self, video, dataset_idx, dataset, step):
 
         # Video is the original, unpatched video
         # Interpolate the video from 256x256 to 448x448. Input size: (B, T, 1, H, W, C)
         # From the documentation, the interpolate function says that:
         # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
         
+        original_video = dataset.get_video_from_index(dataset_idx)
+
         B, T, N, H, W, C = video.shape
         # rearrange the dimensions to match the expected input format i.e. (B*T, C, H, W)
         video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
@@ -267,8 +272,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         frame2_descriptors = encoded_video[0, t2]
 
         # extract tensor for the two frames
-        frame1 = original_video[0, t1, 0].squeeze(0)  # shape: (H, W, C)
-        frame2 = original_video[0, t2, 0].squeeze(0)  # shape: (H, W, C)
+        frame1 = original_video[0, t1]#, 0].squeeze(0)  # shape: (H, W, C)
+        frame2 = original_video[0, t2]#, 0].squeeze(0)  # shape: (H, W, C)
 
         # Convert the tensor to numpy array, cv2 expect channels to be last
         image_1 = frame1.cpu().numpy()
@@ -302,9 +307,9 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
         ordered_dict = OrderedDict(
             [
-                (f"frame_1_idx_{t1}", image_1),
-                (f"frame_2_idx_{t2}", image_2),
-                (f"drawn_matches_{t1}_{t2}", drawn_matches / 255.),
+                (f"frame_1_idx_{t1}_step_{step}", image_1),
+                (f"frame_2_idx_{t2}_step_{step}", image_2),
+                (f"drawn_matches_{t1}_{t2}_step_{step}", drawn_matches / 255.),
                 # ("pca_output", pca_output),
             ]
         )
