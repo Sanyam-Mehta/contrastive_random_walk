@@ -48,6 +48,12 @@ class Visualizer:
             print("create web directory %s..." % self.web_dir)
             util.mkdirs([self.web_dir, self.img_dir])
 
+    # |Save Loss in Tensorboard|: log loss in tensorboard
+    def display_current_losses(self, losses, step):
+        if self.tf_log:
+            for name, loss in losses.items():
+                self.tf.summary.scalar(name, loss, step=step)
+
     # |visuals|: dictionary of images to display or save
     def display_current_results(self, visuals, step):
 

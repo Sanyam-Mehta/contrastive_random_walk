@@ -29,12 +29,13 @@ tranformations_frame = T.Compose(
 )
 
 # TODO: Check if transforms are passed correctly
+# Frame Rate 8 from Allan's Code
 train_dataset = KineticsCustom(
     root="/content/drive/MyDrive/data/kinetics/videos",
     split="train",
-    frames_per_clip=5,
+    frames_per_clip=10,
     step_between_clips=1,
-    frame_rate=None,
+    frame_rate=8,
     extensions=("mp4",),
     num_classes=400,
     transform_video=transforms_video,
@@ -80,18 +81,28 @@ visualizer = Visualizer(
 
 print("Model Initialization")
 # Initialize the model
+# model = ContrastiveRandomWalkLightningWrapper(
+#     resnet_type="resnet18",
+#     output_dim=128,
+#     temperature=1.0,
+#     edge_dropout_rate=0.5,
+#     learning_rate=1e-3,
+#     visualizer=visualizer,
+# ).to(device)
+# From Allan's Code
 model = ContrastiveRandomWalkLightningWrapper(
     resnet_type="resnet18",
     output_dim=128,
-    temperature=1.0,
-    edge_dropout_rate=0.5,
-    learning_rate=1e-3,
+    temperature=0.07,
+    edge_dropout_rate=0.1,
+    learning_rate=1e-4,
     visualizer=visualizer,
 ).to(device)
 
+
 print("Trainer Initialization")
 # Initialize the trainer
-trainer = L.Trainer(max_epochs=5, callbacks=[checkpoint_callback])
+trainer = L.Trainer(max_epochs=10, callbacks=[checkpoint_callback])
 
 print("Starting Training")
 # Train the model
