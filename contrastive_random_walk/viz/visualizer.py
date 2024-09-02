@@ -32,7 +32,7 @@ class Visualizer:
         self.output_dir = "data/checkpoint"
         self.train_loss_txt = "train_loss.txt"
         self.val_loss_txt = "val_loss.txt"
-        self.viz_name = "second_gpu_run"
+        self.viz_name = "third_gpu_run"
         
         if self.tf_log:
 
