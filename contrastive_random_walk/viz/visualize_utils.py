@@ -39,7 +39,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     # Extracts keypoints that lie on a grid_size x grid_size grid
     print(grid.shape)
     print(grid)
-    kps = [cv2.KeyPoint(grid[0][i], grid[1][i], 1) for i in range(grid.shape[-1])]
+    kps = [cv2.KeyPoint(int(grid[0][i]), int(grid[1][i]), 1) for i in range(grid.shape[-1])]
 
     # Sort the matches based on distance
     matches = sorted(matches, key=lambda x: x.distance)
