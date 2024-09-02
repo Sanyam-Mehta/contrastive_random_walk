@@ -234,7 +234,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
         
         # Taking the first element of the dataset_idx tensor
-        dataset_idx = dataset_idx.item()[0]
+        dataset_idx = dataset_idx[0].item()
         print("dataset_idx: ", dataset_idx)
 
         original_video = dataset.get_video_from_index(dataset_idx)
