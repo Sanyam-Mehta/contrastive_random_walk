@@ -43,14 +43,14 @@ train_dataset = KineticsCustom(
 )
 
 checkpoint_callback = ModelCheckpoint(
-    dirpath='/content/drive/MyDrive/data/checkpoints/', 
+    dirpath='/content/drive/MyDrive/data/checkpoints_new/', 
     filename='{epoch}-{val_loss:.2f}-{other_metric:.2f}',
     monitor='val_loss',
     mode='min',
     save_top_k=3,
     save_last=True,
     verbose=True,
-    every_n_train_steps=100,
+    every_n_train_steps=50,
     auto_insert_metric_name=True
  )
 

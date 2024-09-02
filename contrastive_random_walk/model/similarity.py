@@ -100,10 +100,16 @@ def get_affinity_matrices(input, temperature=1.0, edge_dropout_rate=0.5):
     )
 
     # Assert that the sum of each row is equal to 1
-    # assert torch.isclose(
-    #     edge_dropped_local_affinity_matrices.sum(dim=-1),
-    #     torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
-    # ).all()
+    try:
+        assert torch.isclose(
+            edge_dropped_local_affinity_matrices.sum(dim=-1),
+            torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
+        ).all()
+    except AssertionError as e:
+        print(edge_dropped_local_affinity_matrices)
+        print(edge_dropped_local_affinity_matrices < 0)
+        print(e.__traceback__)
+        raise AssertionError
 
     global_affinity_matrix = torch.prod(edge_dropped_local_affinity_matrices, dim=1)
 
