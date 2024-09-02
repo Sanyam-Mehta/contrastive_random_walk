@@ -267,8 +267,8 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         frame2_descriptors = encoded_video[0, t2]
 
         # extract tensor for the two frames
-        frame1 = original_video[0, t1, 0]
-        frame2 = original_video[0, t2, 0]
+        frame1 = original_video[0, t1, 0].squeeze(0)  # shape: (H, W, C)
+        frame2 = original_video[0, t2, 0].squeeze(0)  # shape: (H, W, C)
 
         # Convert the tensor to numpy array, cv2 expect channels to be last
         image_1 = frame1.cpu().numpy()
