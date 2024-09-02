@@ -52,7 +52,7 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     out = cv2.drawMatches(
         (image_1 * 255.).astype(np.uint8) ,
         kps,
-        (image_1 * 255.).astype(np.uint8),
+        (image_2 * 255.).astype(np.uint8),
         kps,
         matches[:],
         None,
