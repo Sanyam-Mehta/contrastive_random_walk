@@ -183,7 +183,7 @@ def tensor2label(label_tensor, n_label, imtype=np.uint8, colorize=True):
 
 
 def save_image(image_numpy, image_path, imagesize=None):
-    image_pil = Image.fromarray(image_numpy)
+    image_pil = Image.fromarray((image_numpy * 255).astype(np.uint8))
     if imagesize is not None:
         img_w, img_h = imagesize
         image_pil = image_pil.resize((img_w, img_h), Image.NEAREST)
