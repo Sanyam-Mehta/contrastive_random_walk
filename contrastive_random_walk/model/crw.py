@@ -299,6 +299,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
         # Label, Image
         print("Creating ordered dict")
+        print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
         ordered_dict = OrderedDict(
             [
                 (f"frame_1_idx_{t1}", image_1),
