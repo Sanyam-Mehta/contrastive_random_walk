@@ -42,8 +42,10 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
     kps = [cv2.KeyPoint(int(grid[0][i]), int(grid[1][i]), 1) for i in range(grid.shape[-1])]
 
     # Sort the matches based on distance
+    print("Sorting matches")
     matches = sorted(matches, key=lambda x: x.distance)
 
+    print("CV2 Drawing")
     # img1 = img2 = np.zeros((40, 40, 3))
     out = cv2.drawMatches(
         image_1.astype(np.uint8),
@@ -54,6 +56,8 @@ def draw_matches(image_1, image_2, embeddings_image_1, embeddings_image_2, grid_
         None,
         flags=2,
     ).transpose(2, 0, 1)
+
+    print("CV2 Drawn")
 
     return out
 

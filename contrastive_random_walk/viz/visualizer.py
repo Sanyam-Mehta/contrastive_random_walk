@@ -94,7 +94,9 @@ class Visualizer:
             summary = self.tf.compat.v1.Summary(value=img_summaries)
             self.writer.add_summary(summary, step)
 
+        print("Image Summary added to Tensorboard")
         if self.use_html:  # save images to a html file
+            print("Saving images to HTML")
             for label, image_numpy in visuals.items():
                 if isinstance(image_numpy, list):
                     for i in range(len(image_numpy)):
@@ -147,6 +149,7 @@ class Visualizer:
                     webpage.add_images(
                         ims[num:], txts[num:], links[num:], width=self.win_size
                     )
+            print("Saving HTML")
             webpage.save()
 
     # errors: dictionary of error labels and values

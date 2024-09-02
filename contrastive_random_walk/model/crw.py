@@ -178,6 +178,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             # Visualize the video
             print("Visualizing the video")
             visuals = self.get_visuals(video, self.current_epoch)
+            print("Displaying the results")
             self.visualizer.display_current_results(visuals, self.current_epoch)
 
         self.log("train_loss", loss)
@@ -283,7 +284,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         )
 
         # extract one video clip from batch 0 and visualize top 3K components using pca_feats_top_3K_components function
-        video_clip = video[0].squeeze(1)  # shape: (T, H, W, C)
+        # video_clip = video[0].squeeze(1)  # shape: (T, H, W, C)
 
         # Apply PCA to the video clip
         # pca_output = pca_feats_top_3K_components(video_clip)
@@ -297,6 +298,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         #     self.averageloss = []
 
         # Label, Image
+        print("Creating ordered dict")
         ordered_dict = OrderedDict(
             [
                 (f"frame_1_idx_{t1}", image_1),
