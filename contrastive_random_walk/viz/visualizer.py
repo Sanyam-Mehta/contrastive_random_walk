@@ -7,6 +7,8 @@ from io import BytesIO  # Python 3.x
 from contrastive_random_walk.viz import html, util
 from PIL import Image
 
+import tensorflow as tf
+
 
 class Visualizer:
     def __init__(self, 
@@ -31,7 +33,6 @@ class Visualizer:
         self.viz_name = "exp1"
         
         if self.tf_log:
-            import tensorflow as tf
 
             self.tf = tf
             # self.tf.compat.v1.disable_eager_execution()
