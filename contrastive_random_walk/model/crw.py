@@ -177,7 +177,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
         self.visualizer.display_current_losses(
             {
-                "train_loss": loss,
+                "train_loss": loss.item(),
             }, 
             self.current_epoch
         )
@@ -189,7 +189,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             #print("Displaying the results")
             self.visualizer.display_current_results(visuals, self.current_epoch)
 
-        self.log("train_loss", loss)
+        self.log("train_loss", loss.item())
 
         # if epoch is divisible by 10, visualize the video
 
@@ -225,11 +225,11 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # Take the mean of the losses
         loss = torch.mean(torch.stack(loss_all_walks))
 
-        self.log("val_loss", loss)
+        self.log("val_loss", loss.item())
 
         self.visualizer.display_current_losses(
             {
-                "val_loss": loss,
+                "val_loss": loss.item(),
             }, 
             self.current_epoch
         )
