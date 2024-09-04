@@ -2,6 +2,8 @@ import torch
 
 import torch.nn.functional as F
 
+import numpy as np
+
 
 def softmax_similarity_function_local(input, temperature=1.0):
     """
@@ -78,6 +80,17 @@ def get_global_affinity_matrix(input, temperature=1.0, edge_dropout_rate=0.5):
     #     torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
     # ).all()
 
+    try:
+        assert torch.isclose(
+            edge_dropped_local_affinity_matrices.sum(dim=-1),
+            torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
+        ).all()
+    except AssertionError as e:
+        print(edge_dropped_local_affinity_matrices.sum(dim=-1))
+        print(np.any(edge_dropped_local_affinity_matrices.sum(dim=-1) < 0))
+        print(e.__traceback__)
+        raise AssertionError
+
     global_affinity_matrix = torch.prod(edge_dropped_local_affinity_matrices, dim=1)
 
     return global_affinity_matrix
@@ -106,8 +119,8 @@ def get_affinity_matrices(input, temperature=1.0, edge_dropout_rate=0.5):
             torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
         ).all()
     except AssertionError as e:
-        print(edge_dropped_local_affinity_matrices)
-        print(edge_dropped_local_affinity_matrices < 0)
+        print(edge_dropped_local_affinity_matrices.sum(dim=-1))
+        print(np.any(edge_dropped_local_affinity_matrices.sum(dim=-1) < 0))
         print(e.__traceback__)
         raise AssertionError
 
@@ -140,6 +153,19 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
     #     edge_dropped_local_affinity_matrices.sum(dim=-1),
     #     torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
     # ).all()
+
+    try:
+        assert torch.isclose(
+            edge_dropped_local_affinity_matrices.sum(dim=-1),
+            torch.ones_like(edge_dropped_local_affinity_matrices.sum(dim=-1)),
+        ).all()
+
+    except AssertionError as e:
+        print(edge_dropped_local_affinity_matrices.sum(dim=-1))
+        print(np.any(edge_dropped_local_affinity_matrices.sum(dim=-1) < 0))
+        print(e.__traceback__)
+        raise AssertionError
+    
 
 
     # Extract global affinity matrix for each walk. Walks are defined as the palindromic sequence of frames starting from frame 0.
