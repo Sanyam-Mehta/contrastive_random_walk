@@ -29,10 +29,10 @@ class Visualizer:
         self.win_size = win_size
         self.name = name
         self.freq = freq
-        self.output_dir = "data/checkpoint"
+        self.output_dir = "data/checkpoint_rerun_20240904/"
         self.train_loss_txt = "train_loss.txt"
         self.val_loss_txt = "val_loss.txt"
-        self.viz_name = "third_gpu_run"
+        self.viz_name = "rerun_20240904"
         
         if self.tf_log:
 
