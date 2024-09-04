@@ -102,4 +102,4 @@ trainer = L.Trainer(
 
 print("Starting Training")
 # Train the model
-trainer.fit(model, train_dataloader, val_dataloader)
+trainer.fit(model, train_dataloader, val_dataloader, ckpt_path="")

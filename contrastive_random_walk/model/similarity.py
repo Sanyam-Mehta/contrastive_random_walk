@@ -129,10 +129,15 @@ def get_affinity_matrices(input, temperature=1.0, edge_dropout_rate=0.5):
     return global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices
 
 
-def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.5):
+def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.5, batch=None):
     """
     Multiplies the local affinity matrices to get the global affinity matrix.
     """
+
+    video_patches = batch["video_patches"]
+    video = batch["video"]
+    dataset_idx = batch["dataset_idx"]
+
     local_affinity_matrices = get_local_affinity_matrices(input, temperature)
 
     edge_dropped_local_affinity_matrices = edge_dropout(
@@ -161,6 +166,20 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
         ).all()
 
     except AssertionError as e:
+        print("Encoded Vide\n")
+        print(input)
+
+        print("Video Patches\n")
+        print(video_patches)
+
+        print("Video\n")
+        print(video)
+
+        print("Dataset Index\n")
+        print(dataset_idx)
+
+
+        print("Local Affinity Matrices\n")
         print(edge_dropped_local_affinity_matrices.sum(dim=-1))
         print(np.any(edge_dropped_local_affinity_matrices.sum(dim=-1) < 0))
         print(e.__traceback__)

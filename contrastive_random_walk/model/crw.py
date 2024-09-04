@@ -167,7 +167,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             local_affinity_matrices,
             edge_dropped_local_affinity_matrices,
         ) = get_affinity_matrices_all_walks(
-            encoded_video, self.temperature, self.edge_dropout_rate
+            encoded_video, self.temperature, self.edge_dropout_rate, batch
         )
         # print("We have affinity matrices")
 
@@ -220,7 +220,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             local_affinity_matrices,
             edge_dropped_local_affinity_matrices,
         ) = get_affinity_matrices_all_walks(
-            encoded_video, self.temperature, self.edge_dropout_rate
+            encoded_video, self.temperature, self.edge_dropout_rate, batch
         )
 
         # Compute loss here
