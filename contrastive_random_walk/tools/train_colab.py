@@ -44,7 +44,6 @@ train_dataset = KineticsCustom(
 
 checkpoint_callback = ModelCheckpoint(
     dirpath='/content/drive/MyDrive/data/checkpoints_rerun_20240904/', 
-    save_last=True,
     verbose=True,
     every_n_train_steps=30,
  )
