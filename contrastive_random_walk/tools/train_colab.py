@@ -1,5 +1,5 @@
 import lightning as L
-from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.callbacks import ModelCheckpoint, StochasticWeightAveraging
 import torch
 from contrastive_random_walk.data.kinetics_dataset_colab import KineticsCustom
 from contrastive_random_walk.model.crw import ContrastiveRandomWalkLightningWrapper
@@ -43,10 +43,16 @@ train_dataset = KineticsCustom(
 )
 
 checkpoint_callback = ModelCheckpoint(
-    dirpath='/content/drive/MyDrive/data/checkpoints_rerun_20240904/', 
+    dirpath='/content/drive/MyDrive/data/checkpoints_rerun_20240905/', 
     verbose=True,
     every_n_train_steps=30,
  )
+
+
+# Use with cosine anealing
+# stochastic_weight_averaging_callback = StochasticWeightAveraging(
+#     swa_lr=0.05,
+# )
 
 train_dataloader = torch.utils.data.DataLoader(
     train_dataset, batch_size=8, shuffle=True
@@ -97,7 +103,10 @@ model = ContrastiveRandomWalkLightningWrapper(
 print("Trainer Initialization")
 # Initialize the trainer
 trainer = L.Trainer(
-    max_epochs=10, callbacks=[checkpoint_callback])
+    max_epochs=10, callbacks=[checkpoint_callback],
+    gradient_clip_val=0.5,
+    gradient_clip_algorithm='norm',
+)
 
 print("Starting Training")
 # Train the model
@@ -105,5 +114,4 @@ trainer.fit(
   model, 
   train_dataloader, 
   val_dataloader, 
-  ckpt_path="/content/drive/MyDrive/data/first_run_4_september/checkpoints_rerun_20240904/copies/epoch=0-step=90_copy.ckpt"
 )

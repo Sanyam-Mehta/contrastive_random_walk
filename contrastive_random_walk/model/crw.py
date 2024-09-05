@@ -14,6 +14,7 @@ from contrastive_random_walk.viz.visualize_utils import (
     draw_matches,
     pca_feats_top_3K_components,
 )
+import os
 
 
 class ContrastiveRandomWalkLoss(nn.Module):
@@ -195,18 +196,28 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             self.current_epoch
         )
 
-        if self.global_step % self.train_viz_freq == 0:
-            # Visualize the video
-            #print("Visualizing the video")
-            visuals = self.get_visuals(video, dataset_idx, self.trainer.train_dataloader.dataset, self.global_step)
-            #print("Displaying the results")
-            self.visualizer.display_current_results(visuals, self.global_step)
+        # if self.global_step % self.train_viz_freq == 0:
+        #     # Visualize the video
+        #     #print("Visualizing the video")
+        #     visuals = self.get_visuals(video, dataset_idx, self.trainer.train_dataloader.dataset, self.global_step)
+        #     #print("Displaying the results")
+        #     self.visualizer.display_current_results(visuals, self.global_step)
 
-        self.log("train_loss", loss.item())
+        if (
+                self.trainer.global_step % 30 == 0
+        ):
+            self.trainer.save_checkpoint(
+                os.path.join(
+                    self.trainer.checkpoint_callback.dirpath,
+                    f"global_step_{self.trainer.global_step}_train_loss_{loss.item()}.ckpt",
+                )
+            )
+
+        self.log("train_loss", loss.item(), logger=True)
 
         # if epoch is divisible by 10, visualize the video
 
-        return loss
+        return {"loss": loss, "log": {"train_loss": loss}}
 
     def validation_step(self, batch, batch_idx):
         video_patches = batch["video_patches"]
@@ -238,7 +249,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         # Take the mean of the losses
         loss = torch.mean(torch.stack(loss_all_walks))
 
-        self.log("val_loss", loss.item())
+        self.log("val_loss", loss.item(), logger=True)
 
         self.visualizer.display_current_losses(
             {
@@ -247,7 +258,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
             self.current_epoch
         )
 
-        return loss
+        return {"val_loss": loss, "log": {"val_loss": loss}}
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
