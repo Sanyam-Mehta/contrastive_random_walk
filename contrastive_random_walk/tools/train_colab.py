@@ -35,7 +35,7 @@ train_dataset = KineticsCustom(
     split="train",
     frames_per_clip=10,
     step_between_clips=1,
-    frame_rate=8,
+    frame_rate=1, #8,
     extensions=("mp4",),
     num_classes=400,
     transform_video=transforms_video,
@@ -43,9 +43,9 @@ train_dataset = KineticsCustom(
 )
 
 checkpoint_callback = ModelCheckpoint(
-    dirpath='/content/drive/MyDrive/data/checkpoints_rerun_20240905/', 
+    dirpath='/content/drive/MyDrive/data/debug_20240905_1/', 
     verbose=True,
-    every_n_train_steps=30,
+    every_n_train_steps=20,
  )
 
 
@@ -91,7 +91,7 @@ print("Model Initialization")
 # ).to(device)
 # From Allan's Code
 model = ContrastiveRandomWalkLightningWrapper(
-    resnet_type="resnet18",
+    resnet_type='resent50', #"resnet18",
     output_dim=128,
     temperature=0.07,
     edge_dropout_rate=0.1,
@@ -106,6 +106,7 @@ trainer = L.Trainer(
     max_epochs=10, callbacks=[checkpoint_callback],
     gradient_clip_val=0.5,
     gradient_clip_algorithm='norm',
+    detect_anomaly=True,
 )
 
 print("Starting Training")

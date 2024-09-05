@@ -55,7 +55,7 @@ class KineticsCustom():
     def __getitem__(self, idx):
         # Get the video from the index
         # print("Getting video from index")
-        video = self.get_video_from_index(idx)
+        video, video_path = self.get_video_from_index(idx)
         # print("Got video from index")
         # print("Video Shape: ", video.shape)
         # video shape: (T, H, W, C) and channels dimension is last
@@ -122,7 +122,8 @@ class KineticsCustom():
         return {
             "video_patches": video_patches,
             "video": video,
-            "dataset_idx": idx
+            "dataset_idx": idx,
+            "video_path": video_path,
         }
 
     def __len__(self) -> int:
@@ -130,7 +131,9 @@ class KineticsCustom():
 
 
     def get_video_from_index(self, idx):
-        video, _, _, _ = self.video_clips.get_clip(idx)
+        video, _, _, video_idx = self.video_clips.get_clip(idx)
+
+        video_path =  self.video_clips.video_paths[video_idx] 
 
         # Inside Video Transform
         # video = self.transform_video(video)
@@ -142,7 +145,7 @@ class KineticsCustom():
 
         # video shape: (T, H, W, C) and channels dimension is last
         assert video.shape[3] == 3, "Video should have 3 channels"
-        return video  # video, audio, self.class_to_idx[info["label"]]
+        return video, video_path  # video, audio, self.class_to_idx[info["label"]]
 
 
 class KineticsCustomTest:

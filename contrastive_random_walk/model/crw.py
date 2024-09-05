@@ -14,7 +14,10 @@ from contrastive_random_walk.viz.visualize_utils import (
     draw_matches,
     pca_feats_top_3K_components,
 )
+from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
+
 import os
+from lightning.pytorch.utilities import grad_norm
 
 
 class ContrastiveRandomWalkLoss(nn.Module):
@@ -145,7 +148,11 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         video = batch["video"]
         dataset_idx = batch["dataset_idx"]
 
+        # videos processed in the batch
+        video_path = batch["video_path"]
+
         # print("Encoding Video")
+        print("Using Following Videos \n", video_path)
         encoded_video = self.model(video_patches)
 
         # encoded_video shape: (B, T, N, D)
@@ -223,6 +230,7 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         video_patches = batch["video_patches"]
         video = batch["video"]
         dataset_idx = batch["dataset_idx"]
+        video_path = batch["video_path"]
         
         encoded_video = self.model(video_patches)
 
@@ -261,8 +269,42 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
         return {"val_loss": loss, "log": {"val_loss": loss}}
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        return optimizer
+        # optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+        optimizer = torch.optim.AdamW(
+                        filter(lambda p: p.requires_grad, self.parameters()),
+                        lr=self.learning_rate,
+                        betas=(0.9, 0.999),
+                        weight_decay=0.01
+                    )
+        
+        scheduler = {
+            'scheduler': CosineAnnealingWarmupRestarts(
+                                          optimizer,
+                                          first_cycle_steps=20,
+                                          cycle_mult=1.2,
+                                          max_lr=self.learning_rate,
+                                          min_lr=self.learning_rate / 600,
+                                          warmup_steps=5,
+                                          gamma=0.,
+                                        ),
+            'name': 'lr_over_time' 
+        }
+        return [optimizer], [scheduler]
+
+    # Store norms of the gradients
+    def on_before_optimizer_step(self, optimizer):
+        # Compute the 2-norm for each layer
+        # If using mixed precision, the gradients are already unscaled here
+        norms = grad_norm(self.layer, norm_type=2)
+        self.log_dict(norms)
+
+        # will it work?
+        if self.trainer.global_step % 25 == 0:  # don't make the tf file huge
+            for k, v in self.named_parameters():
+                self.logger.experiment.add_histogram(
+                    tag=k, values=v.grad, global_step=self.trainer.global_step
+                )
 
     def get_visuals(self, video, dataset_idx, dataset, step):
 

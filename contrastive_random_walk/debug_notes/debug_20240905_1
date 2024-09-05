@@ -1,0 +1,8 @@
+Changes made:
+
+1. Add weight decay
+2. Reduce frame_rate (using frame_rate = 1)
+3. Use Resnet 50 (with a smaller batch size)
+4. Set Trainer Argument Detect Anomaly to True
+5. Log the norm of gradients (this might/might not work.)
+6. print video paths

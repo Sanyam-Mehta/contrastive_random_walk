@@ -9,7 +9,7 @@ class ResNetPatchEncoder(nn.Module):
         super(ResNetPatchEncoder, self).__init__()
 
         # Load a pre-trained ResNet model
-        resnet_model = getattr(models, resnet_type)(pretrained=True)
+        resnet_model = getattr(models, resnet_type)() #
 
         # Remove the fully connected layer (classifier) and the average pooling layer from the ResNet model
         # I will handle the average pooling layer myself
