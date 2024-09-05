@@ -101,4 +101,9 @@ trainer = L.Trainer(
 
 print("Starting Training")
 # Train the model
-trainer.fit(model, train_dataloader, val_dataloader, ckpt_path="")
+trainer.fit(
+  model, 
+  train_dataloader, 
+  val_dataloader, 
+  ckpt_path="/content/drive/MyDrive/data/first_run_4_september/checkpoints_rerun_20240904/copies/epoch=0-step=90_copy.ckpt"
+)

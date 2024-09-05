@@ -346,3 +346,4 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
                 ]
             )
         return ordered_dict
+
