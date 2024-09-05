@@ -37,6 +37,7 @@ class ResNetPatchEncoder(nn.Module):
     def forward(self, x):
         # x shape: (B, N, H, W, C)
 
+        print("Is input nan ", torch.isnan(x).any())
         B, N, H, W, C = x.shape
         # B: batch size
         # N: number of patches
@@ -49,12 +50,18 @@ class ResNetPatchEncoder(nn.Module):
         # permute to (B, N, C, H, W)
         x = einops.rearrange(x, "b n h w c -> b n c h w")
 
+        print("First Rearrangement Nan ", torch.isnan(x).any())
         # Reshape x to combine batch and node dimensions for efficient processing (use einops)
         x = einops.rearrange(x, "b n c h w -> (b n) c h w")
 
+        print("Second Rearrangement Nan ", torch.isnan(x).any())
+        # print("Rerarnaged x \n", x)
         # Pass through ResNet encoder
+        # This needs to be tested if nan is not above
+        # print("before encoder \n", x)
         x = self.resnet_encoder(x)  # shape: (B*N, C1, H1, W1)
-
+        # print("after encoder \n", x)
+        print("Nan after encoder ", torch.isnan(x).any())
         # SANYAM ADDED THIS ON SEPTEMBER 2 AS HE WANTED THE CODE TO BE AS CLOSE TO THE ORIGINAL AS POSSIBLE
         # To support multiple dimensional frames, we need to add features in the H and W dimensions, get a single number
         # per channel and use that number as the channel feature to be passed through the linear layer.
@@ -67,7 +74,9 @@ class ResNetPatchEncoder(nn.Module):
         # but at the same time average pooling eats up some information.
         # It works decent under the assumption that in the final layer, H and W dimensions are
         # not that large, and hence would anyway have the context of the entire image.
+        # print("Before avg. pool \n", x)
         x = x.sum(-1).sum(-1) / (H * W)
+        # print("after avg pool \n", x)
 
         # Pass through the linear projection layer to get the output features of dimension D
         x = self.leaky_relu(self.fc(x))
@@ -79,9 +88,11 @@ class ResNetPatchEncoder(nn.Module):
         # # Pass through the linear projection layer
         # x = self.leaky_relu(self.fc(x))  # shape: (B*N, D)
 
+        # print("Before Normalization \n", x)
         # Apply L2 normalization so that the output features have unit norm (the D dimension) has unit norm
         x = nn.functional.normalize(x, p=2, dim=-1)
-
+        # print("Before Norm \n", x)
+        
         # Reshape back to include the batch and node dimensions (use einops)
         x = einops.rearrange(x, "(b n) d -> b n d", b=B, n=N)
 

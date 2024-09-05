@@ -129,7 +129,7 @@ def get_affinity_matrices(input, temperature=1.0, edge_dropout_rate=0.5):
     return global_affinity_matrix, local_affinity_matrices, edge_dropped_local_affinity_matrices
 
 
-def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.5, batch=None):
+def get_affinity_matrices_all_walks(input_v, temperature=1.0, edge_dropout_rate=0.5, batch=None):
     """
     Multiplies the local affinity matrices to get the global affinity matrix.
     """
@@ -138,7 +138,7 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
     video = batch["video"]
     dataset_idx = batch["dataset_idx"]
 
-    local_affinity_matrices = get_local_affinity_matrices(input, temperature)
+    local_affinity_matrices = get_local_affinity_matrices(input_v, temperature)
 
     edge_dropped_local_affinity_matrices = edge_dropout(
         local_affinity_matrices, edge_dropout_rate
@@ -166,17 +166,17 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
         ).all()
 
     except AssertionError as e:
-        print("Encoded Vide\n")
-        print(input)
+        # print("Encoded Vide\n") # This thing is NAN
+        # print(input_v) 
 
-        print("Video Patches\n")
-        print(video_patches)
+        #print("Video Patches\n")
+        #print(video_patches)
 
-        print("Video\n")
-        print(video)
+        # print("Video\n")
+        # print(video)
 
-        print("Dataset Index\n")
-        print(dataset_idx)
+        # print("Dataset Index\n")
+        # print(dataset_idx)
 
 
         print("Local Affinity Matrices\n")
@@ -196,7 +196,7 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
 
     global_affinity_matrix_all_walks_dict = dict()
     #print("Going inside affinity matrices multiplcation loop")
-    for walk_len in range(2, input.size(1)+1):
+    for walk_len in range(2, input_v.size(1)+1):
         # walk_front contains the product of the local affinity matrices from frame at idx 0 to frame at idx walk_len-1
         walk_front = torch.prod(edge_dropped_local_affinity_matrices[:, :walk_len], dim=1)
 
@@ -206,7 +206,7 @@ def get_affinity_matrices_all_walks(input, temperature=1.0, edge_dropout_rate=0.
         walk_palindrome =  walk_palindrome = torch.einsum('bij,bjk->bik', walk_front, walk_back)
 
         # walk_palindrome shape: (B, N, N)
-        assert walk_palindrome.shape == (input.size(0), input.size(2), input.size(2))
+        assert walk_palindrome.shape == (input_v.size(0), input_v.size(2), input_v.size(2))
 
 
         global_affinity_matrix_all_walks_dict[walk_len] = walk_palindrome

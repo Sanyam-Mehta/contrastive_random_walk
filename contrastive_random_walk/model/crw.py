@@ -255,93 +255,95 @@ class ContrastiveRandomWalkLightningWrapper(L.LightningModule):
 
     def get_visuals(self, video, dataset_idx, dataset, step):
 
-        # Video is the original, unpatched video
-        # Interpolate the video from 256x256 to 448x448. Input size: (B, T, 1, H, W, C)
-        # From the documentation, the interpolate function says that:
-        # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
-        
-        # Taking the first element of the dataset_idx tensor
-        dataset_idx = dataset_idx[0].item()
-        #print("dataset_idx: ", dataset_idx)
+        with torch.no_grad():
+            # Video is the original, unpatched video
+            # Interpolate the video from 256x256 to 448x448. Input size: (B, T, 1, H, W, C)
+            # From the documentation, the interpolate function says that:
+            # The input dimensions are interpreted in the form: mini-batch x channels x [optional depth] x [optional height] x width.
+            
+            # Taking the first element of the dataset_idx tensor
+            dataset_idx = dataset_idx[0].item()
+            #print("dataset_idx: ", dataset_idx)
 
-        original_video = dataset.get_video_from_index(dataset_idx)
+            original_video = dataset.get_video_from_index(dataset_idx)
 
-        B, T, N, H, W, C = video.shape
-        # rearrange the dimensions to match the expected input format i.e. (B*T, C, H, W)
-        video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
-        video = torch.nn.functional.interpolate(video, size=(448, 448))
+            B, T, N, H, W, C = video.shape
+            # rearrange the dimensions to match the expected input format i.e. (B*T, C, H, W)
+            video = einops.rearrange(video, "B T N H W C -> (B T N) C H W")
+            video = torch.nn.functional.interpolate(video, size=(448, 448))
 
-        # divide it into 16x16 patches
-        grid_size = 16
-        patchified_video = divide_image_into_patches(
-            einops.rearrange(video, "(B T) C H W -> (B T) H W C", B=B, T=T),
-            grid_size=grid_size,
-        )
+            # divide it into 16x16 patches
+            grid_size = 16
+            patchified_video = divide_image_into_patches(
+                einops.rearrange(video, "(B T) C H W -> (B T) H W C", B=B, T=T),
+                grid_size=grid_size,
+            )
 
-        patchified_video = einops.rearrange(
-            patchified_video, "(B T) N H W C -> B T N H W C", B=B, T=T
-        )
+            patchified_video = einops.rearrange(
+                patchified_video, "(B T) N H W C -> B T N H W C", B=B, T=T
+            )
 
-        #print("Interpolated video shape after patchifications: ", patchified_video.shape, video.shape)
+            #print("Interpolated video shape after patchifications: ", patchified_video.shape, video.shape)
 
-        # # rearrange the dimensions back to the original format
-        video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
+            # # rearrange the dimensions back to the original format
+            video = einops.rearrange(video, "(B T) C H W -> B T 1 H W C", B=B, T=T)
 
-        # Dimensions: B, T, 1, H, W, C (H==W)
-        # assert video.shape[2] == 1, "Video should have only one patch"
-        # assert video.shape[3] == video.shape[4], "Height and width should be equal"
+            # Dimensions: B, T, 1, H, W, C (H==W)
+            # assert video.shape[2] == 1, "Video should have only one patch"
+            # assert video.shape[3] == video.shape[4], "Height and width should be equal"
 
-        # Encode the video using the video encoder
-        encoded_video = self.model(patchified_video)
-        # encoded_video shape: (B, T, N, D)
+            # Encode the video using the video encoder
+            encoded_video = self.model(patchified_video)
+            # encoded_video shape: (B, T, N, D)
 
-        # randomly select two frames from batch 0
-        t1, t2 = np.random.randint(0, encoded_video.shape[1], (2))
+            # randomly select two frames from batch 0
+            t1, t2 = np.random.randint(0, encoded_video.shape[1], (2))
 
-        # extract the features for the two frames
-        frame1_descriptors = encoded_video[0, t1]  # shape: (N, D)
-        frame2_descriptors = encoded_video[0, t2]
+            # extract the features for the two frames
+            frame1_descriptors = encoded_video[0, t1]  # shape: (N, D)
+            frame2_descriptors = encoded_video[0, t2]
 
-        # extract tensor for the two frames
-        frame1 = original_video[t1]#, 0].squeeze(0)  # shape: (H, W, C)
-        frame2 = original_video[t2]#, 0].squeeze(0)  # shape: (H, W, C)
+            # extract tensor for the two frames
+            frame1 = original_video[t1]#, 0].squeeze(0)  # shape: (H, W, C)
+            frame2 = original_video[t2]#, 0].squeeze(0)  # shape: (H, W, C)
 
-        # Convert the tensor to numpy array, cv2 expect channels to be last
-        image_1 = frame1.cpu().numpy()
-        image_2 = frame2.cpu().numpy()
+            # Convert the tensor to numpy array, cv2 expect channels to be last
+            image_1 = frame1.cpu().numpy()
+            image_2 = frame2.cpu().numpy()
 
-        # draw matches between the two frames using draw_matches function
-        drawn_matches = draw_matches(
-            image_1=image_1,
-            image_2=image_2,
-            embeddings_image_1=frame1_descriptors,
-            embeddings_image_2=frame2_descriptors,
-            grid_size=grid_size,
-        )
+            # draw matches between the two frames using draw_matches function
+            drawn_matches = draw_matches(
+                image_1=image_1,
+                image_2=image_2,
+                embeddings_image_1=frame1_descriptors,
+                embeddings_image_2=frame2_descriptors,
+                grid_size=grid_size,
+            )
 
-        # extract one video clip from batch 0 and visualize top 3K components using pca_feats_top_3K_components function
-        # video_clip = video[0].squeeze(1)  # shape: (T, H, W, C)
+            # extract one video clip from batch 0 and visualize top 3K components using pca_feats_top_3K_components function
+            # video_clip = video[0].squeeze(1)  # shape: (T, H, W, C)
 
-        # Apply PCA to the video clip
-        # pca_output = pca_feats_top_3K_components(video_clip)
+            # Apply PCA to the video clip
+            # pca_output = pca_feats_top_3K_components(video_clip)
 
-        # ############## Display results and errors ############
-        # if self.opt.isTrain:
-        #     self.trainingavgloss = np.mean(self.averageloss)
-        #     if self.opt.verbose:
-        #         print ('  Iter: %d, Loss: %f' % (step, self.trainingavgloss) )
-        #     self.writer.add_scalar(self.opt.name+'/trainingloss/', self.trainingavgloss, step)
-        #     self.averageloss = []
+            # ############## Display results and errors ############
+            # if self.opt.isTrain:
+            #     self.trainingavgloss = np.mean(self.averageloss)
+            #     if self.opt.verbose:
+            #         print ('  Iter: %d, Loss: %f' % (step, self.trainingavgloss) )
+            #     self.writer.add_scalar(self.opt.name+'/trainingloss/', self.trainingavgloss, step)
+            #     self.averageloss = []
 
-        # Label, Image
-        #print("Creating ordered dict (channel last)")
-        #print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
-        ordered_dict = OrderedDict(
-            [
-                (f"frame_1_idx_{t1}_step_{step}", image_1 / 255.),
-                (f"frame_2_idx_{t2}_step_{step}", image_2 / 255.),
-                (f"drawn_matches_{t1}_{t2}_step_{step}", drawn_matches / 255.),
-                # ("pca_output", pca_output),
-            ]
-        )
+            # Label, Image
+            #print("Creating ordered dict (channel last)")
+            #print("Shapes: ", image_1.shape, image_2.shape, drawn_matches.shape)
+            ordered_dict = OrderedDict(
+                [
+                    (f"frame_1_idx_{t1}_step_{step}", image_1 / 255.),
+                    (f"frame_2_idx_{t2}_step_{step}", image_2 / 255.),
+                    (f"drawn_matches_{t1}_{t2}_step_{step}", drawn_matches / 255.),
+                    # ("pca_output", pca_output),
+                ]
+            )
         return ordered_dict
+
